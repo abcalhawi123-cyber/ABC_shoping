@@ -1,15 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { useTranslation } from 'react-i18next';
+import { useLang } from '../context/LangContext';
 import { useCart } from '../context/CartContext';
-import i18n from '../i18n';
 
 export default function Cart() {
-  const { t } = useTranslation();
+  const { t, lang } = useLang();
   const { cart, dispatch, subtotal } = useCart();
-  const lang = i18n.language;
 
-  if (cart.length === 0) {
+  if (!cart || cart.length === 0) {
     return (
       <>
         <Helmet><title>السلة — ABC الحاوي</title></Helmet>
@@ -26,21 +24,15 @@ export default function Cart() {
 
   return (
     <>
-      <Helmet><title>السلة ({cart.length}) — ABC الحاوي</title></Helmet>
+      <Helmet><title>السلة — ABC الحاوي</title></Helmet>
       <h1 style={{ color: '#1a3a5c', marginBottom: 24 }}>🛒 {t('cart')}</h1>
-
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 28, alignItems: 'start' }}>
-        {/* Items */}
         <div>
           {cart.map(item => {
             const name = item.name?.[lang] || item.name?.ar;
             const price = item.sellingPrice * (1 - (item.discount || 0) / 100);
             return (
-              <div key={item._id} style={{
-                background: '#fff', borderRadius: 12, padding: '16px',
-                marginBottom: 14, display: 'flex', gap: 16, alignItems: 'center',
-                boxShadow: '0 1px 8px rgba(0,0,0,0.06)', border: '1px solid #f0e8e8',
-              }}>
+              <div key={item._id} style={{ background: '#fff', borderRadius: 12, padding: '16px', marginBottom: 14, display: 'flex', gap: 16, alignItems: 'center', boxShadow: '0 1px 8px rgba(0,0,0,0.06)', border: '1px solid #f0e8e8' }}>
                 <img src={item.images?.[0]?.url || ''} alt={name} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 10 }} />
                 <div style={{ flex: 1 }}>
                   <h3 style={{ margin: '0 0 6px', color: '#1a3a5c', fontSize: 16 }}>{name}</h3>
@@ -60,8 +52,6 @@ export default function Cart() {
             );
           })}
         </div>
-
-        {/* Summary */}
         <div style={{ background: '#fff', borderRadius: 12, padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', border: '1px solid #f0e8e8', position: 'sticky', top: 90 }}>
           <h3 style={{ color: '#1a3a5c', margin: '0 0 18px' }}>ملخص السلة</h3>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -74,18 +64,10 @@ export default function Cart() {
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 18, marginBottom: 20 }}>
             <span>{t('total')}</span><span style={{ color: '#1a3a5c' }}>{subtotal.toFixed(0)} ج.م+</span>
           </div>
-          <Link to="/checkout" style={{
-            display: 'block', textAlign: 'center',
-            background: '#1a3a5c', color: '#fff',
-            padding: '14px', borderRadius: 10,
-            textDecoration: 'none', fontWeight: 700, fontSize: 16,
-            marginBottom: 10,
-          }}>
+          <Link to="/checkout" style={{ display: 'block', textAlign: 'center', background: '#1a3a5c', color: '#fff', padding: '14px', borderRadius: 10, textDecoration: 'none', fontWeight: 700, fontSize: 16, marginBottom: 10 }}>
             {t('checkout')} ←
           </Link>
-          <Link to="/products" style={{ display: 'block', textAlign: 'center', color: '#888', fontSize: 14, textDecoration: 'none' }}>
-            ← متابعة التسوق
-          </Link>
+          <Link to="/products" style={{ display: 'block', textAlign: 'center', color: '#888', fontSize: 14, textDecoration: 'none' }}>← متابعة التسوق</Link>
         </div>
       </div>
     </>

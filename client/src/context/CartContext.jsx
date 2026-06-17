@@ -28,21 +28,30 @@ const cartReducer = (state, action) => {
   }
 };
 
+// Safe parse — always returns an array
+const getSavedCart = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('cart'));
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+};
+
 export const CartProvider = ({ children }) => {
-  const saved = JSON.parse(localStorage.getItem('cart') || '[]');
-  const [cart, dispatch] = useReducer(cartReducer, saved);
+  const [cart, dispatch] = useReducer(cartReducer, [], getSavedCart);
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
   }, [cart]);
 
-  const subtotal = cart.reduce((sum, i) => {
+  const subtotal = Array.isArray(cart) ? cart.reduce((sum, i) => {
     const price = i.sellingPrice * (1 - (i.discount || 0) / 100);
     return sum + price * i.qty;
-  }, 0);
+  }, 0) : 0;
 
   return (
-    <CartContext.Provider value={{ cart, dispatch, subtotal, itemCount: cart.length }}>
+    <CartContext.Provider value={{ cart: Array.isArray(cart) ? cart : [], dispatch, subtotal, itemCount: Array.isArray(cart) ? cart.length : 0 }}>
       {children}
     </CartContext.Provider>
   );

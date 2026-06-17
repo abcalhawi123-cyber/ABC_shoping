@@ -5,9 +5,24 @@ const xssClean = require('xss-clean');
 const hpp = require('hpp');
 const cors = require('cors');
 
-// CORS — only allow frontend origin
+// CORS — allow configured origin + all Vercel preview deployments
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'https://abc-shoping.vercel.app',
+].filter(Boolean);
+
 const corsOptions = {
-  origin: process.env.CLIENT_URL,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (Postman, curl, mobile)
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      /\.vercel\.app$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],

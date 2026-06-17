@@ -20,7 +20,7 @@ export default function Home() {
     <>
       <Helmet>
         <title>ABC الحاوي — ألعاب الأطفال</title>
-        <meta name="description" content="أفضل متجر ألعاب أطفال في مصر. دباديب، ميداليات، شنط، عرائس، ألعاب ديزني وأكثر. شحن لجميع محافظات مصر." />
+        <meta name="description" content="أفضل متجر ألعاب أطفال في مصر. ألعاب قطنية، أقمشة أطفال، وأكثر. شحن لجميع محافظات مصر." />
       </Helmet>
 
       {/* Hero */}
@@ -54,12 +54,9 @@ export default function Home() {
         <h2 style={{ color: '#1a3a5c', marginBottom: 20 }}>تسوق حسب الفئة</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 14 }}>
           {[
-            { emoji: '🐻', label: 'دباديب', q: 'دباديب' },
-            { emoji: '🔑', label: 'ميداليات', q: 'ميداليات' },
-            { emoji: '👜', label: 'شنط', q: 'شنط' },
-            { emoji: '📿', label: 'سلاسل', q: 'سلاسل' },
-            { emoji: '🪆', label: 'عرائس', q: 'عرائس' },
-            { emoji: '🎮', label: 'ألعاب ديزني', q: 'ديزني' },
+            { emoji: '🧸', label: 'ألعاب قطنية', q: 'ألعاب قطنية' },
+            { emoji: '🎀', label: 'أقمشة أطفال', q: 'أقمشة أطفال' },
+            { emoji: '✨', label: 'أخرى', q: 'أخرى' },
           ].map(cat => (
             <Link key={cat.q} to={`/products?category=${cat.q}`} style={{ textDecoration: 'none' }}>
               <div style={{

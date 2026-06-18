@@ -1,70 +1,47 @@
 import axios from 'axios';
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
-  headers: { 'Content-Type': 'application/json' },
+const API = axios.create({ baseURL: import.meta.env.VITE_API_URL || '/api' });
+
+API.interceptors.request.use(c => {
+  const t = localStorage.getItem('token');
+  if (t) c.headers.Authorization = `Bearer ${t}`;
+  return c;
 });
 
-// Attach JWT token to every request
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+API.interceptors.response.use(r => r, err => {
+  if (err.response?.status === 401) { localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = '/#/login'; }
+  return Promise.reject(err);
 });
 
-// Handle 401 globally
-API.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
-    return Promise.reject(err);
-  }
-);
+export const getProducts = p => API.get('/products', { params: p });
+export const getProduct = slug => API.get(`/products/${slug}`);
+export const createProduct = d => API.post('/products', d, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const updateProduct = (id, d) => API.patch(`/products/${id}`, d, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const deleteProduct = id => API.delete(`/products/${id}`);
 
-// ── Products ──────────────────────────────────────────────
-export const getProducts = (params) => API.get('/products', { params });
-export const getProduct = (slug) => API.get(`/products/${slug}`);
-export const createProduct = (data) => API.post('/products', data, { headers: { 'Content-Type': 'multipart/form-data' } });
-export const updateProduct = (id, data) => API.patch(`/products/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
-export const deleteProduct = (id) => API.delete(`/products/${id}`);
+export const placeOrder = d => API.post('/orders', d, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const getOrder = id => API.get(`/orders/${id}`);
+export const getMyOrders = p => API.get('/orders/my/orders', { params: { page: p } });
 
-// ── Orders ────────────────────────────────────────────────
-export const placeOrder = (data) => API.post('/orders', data, { headers: { 'Content-Type': 'multipart/form-data' } });
-export const getOrder = (id) => API.get(`/orders/${id}`);
-export const getMyOrders = (page) => API.get('/orders/my/orders', { params: { page } });
+export const getReviews = (pid, p) => API.get(`/reviews/${pid}`, { params: { page: p } });
+export const submitReview = (pid, d) => API.post(`/reviews/${pid}`, d);
 
-// ── Reviews ───────────────────────────────────────────────
-export const getReviews = (productId, page) => API.get(`/reviews/${productId}`, { params: { page } });
-export const submitReview = (productId, data) => API.post(`/reviews/${productId}`, data);
-
-// ── Shipping ──────────────────────────────────────────────
 export const getShippingZones = () => API.get('/shipping');
+export const addShippingZone = d => API.post('/shipping', d);
+export const updateShippingZone = (id, d) => API.patch(`/shipping/${id}`, d);
+export const deleteShippingZone = id => API.delete(`/shipping/${id}`);
 
-// ── Auth ──────────────────────────────────────────────────
-export const register = (data) => API.post('/auth/register', data);
-export const login = (data) => API.post('/auth/login', data);
-export const adminLogin = (data) => API.post('/auth/admin-login', data);
+export const register = d => API.post('/auth/register', d);
+export const login = d => API.post('/auth/login', d);
+export const adminLogin = d => API.post('/auth/admin-login', d);
 
-// ── Admin ─────────────────────────────────────────────────
-const ADMIN = import.meta.env.VITE_ADMIN_PREFIX;
-export const getDashboard = () => API.get(`/${ADMIN}/dashboard`);
-export const getAdminOrders = (params) => API.get(`/${ADMIN}/orders`, { params });
-export const updateOrderStatus = (id, data) => API.patch(`/orders/${id}/status`, data);
-export const updateOrderPayment = (id, data) => API.patch(`/orders/${id}/payment`, data);
-export const getAdminProducts = (params) => API.get(`/${ADMIN}/products`, { params });
-export const exportReport = (format, startDate, endDate) =>
-  API.get(`/${ADMIN}/reports/export`, { params: { format, startDate, endDate }, responseType: 'blob' });
-
-// ── Shipping Admin ────────────────────────────────────────
-export const addShippingZone = (data) => API.post('/shipping', data);
-export const updateShippingZone = (id, data) => API.patch(`/shipping/${id}`, data);
-export const deleteShippingZone = (id) => API.delete(`/shipping/${id}`);
-
-// ── Reviews Admin ─────────────────────────────────────────
+const A = import.meta.env.VITE_ADMIN_PREFIX;
+export const getDashboard = () => API.get(`/${A}/dashboard`);
+export const getAdminOrders = p => API.get(`/${A}/orders`, { params: p });
+export const getAdminProducts = p => API.get(`/${A}/products`, { params: p });
+export const updateOrderStatus = (id, d) => API.patch(`/orders/${id}/status`, d);
+export const updateOrderPayment = (id, d) => API.patch(`/orders/${id}/payment`, d);
+export const exportReport = (fmt, s, e) => API.get(`/${A}/reports/export`, { params: { format: fmt, startDate: s, endDate: e }, responseType: 'blob' });
 export const getPendingReviews = () => API.get('/reviews/admin/pending');
-export const approveReview = (id) => API.patch(`/reviews/${id}/approve`);
-export const deleteReview = (id) => API.delete(`/reviews/${id}`);
+export const approveReview = id => API.patch(`/reviews/${id}/approve`);
+export const deleteReview = id => API.delete(`/reviews/${id}`);

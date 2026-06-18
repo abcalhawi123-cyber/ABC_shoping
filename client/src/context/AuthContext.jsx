@@ -6,19 +6,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem('user')); } catch { return null; }
   });
-
-  const loginUser = (userData, token) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-  };
-
-  const logoutUser = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-  };
-
+  const loginUser = (u, token) => { localStorage.setItem('token', token); localStorage.setItem('user', JSON.stringify(u)); setUser(u); };
+  const logoutUser = () => { localStorage.removeItem('token'); localStorage.removeItem('user'); setUser(null); };
   return (
     <AuthContext.Provider value={{ user, loginUser, logoutUser, isAdmin: user?.role === 'admin' }}>
       {children}

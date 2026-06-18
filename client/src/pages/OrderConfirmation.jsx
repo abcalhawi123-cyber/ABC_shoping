@@ -5,10 +5,7 @@ import { getOrder } from '../api';
 export default function OrderConfirmation() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
-
-  useEffect(() => {
-    getOrder(id).then(r => setOrder(r.data.data)).catch(() => {});
-  }, [id]);
+  useEffect(() => { getOrder(id).then(r => setOrder(r.data.data)).catch(() => {}); }, [id]);
 
   return (
     <div style={{ textAlign: 'center', padding: '60px 20px', maxWidth: 560, margin: '0 auto' }}>
@@ -16,17 +13,17 @@ export default function OrderConfirmation() {
       <h1 style={{ color: '#27ae60', marginBottom: 8 }}>تم تأكيد طلبك!</h1>
       <p style={{ color: '#888', marginBottom: 24 }}>رقم الطلب: <strong style={{ color: '#1a3a5c' }}>{id}</strong></p>
       {order && (
-        <div style={{ background: '#fff', borderRadius: 12, padding: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.08)', marginBottom: 24, textAlign: 'right' }}>
+        <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', marginBottom: 24, textAlign: 'right' }}>
           <p><strong>الاسم:</strong> {order.customer?.name}</p>
           <p><strong>الإجمالي:</strong> {order.total} ج.م</p>
           <p><strong>طريقة الدفع:</strong> {order.paymentMethod === 'cod' ? 'الدفع عند الاستلام' : order.paymentMethod}</p>
-          <p><strong>التوصيل المتوقع:</strong> {order.estimatedDeliveryDays?.min}–{order.estimatedDeliveryDays?.max} أيام</p>
+          <p><strong>التوصيل:</strong> {order.estimatedDeliveryDays?.min}–{order.estimatedDeliveryDays?.max} أيام</p>
           <p><strong>الحالة:</strong> <span style={{ color: '#ef6c00', fontWeight: 600 }}>{order.status}</span></p>
         </div>
       )}
       {order?.paymentMethod === 'instapay' && order?.paymentStatus === 'pending' && (
-        <div style={{ background: '#fff3e0', borderRadius: 10, padding: '14px', marginBottom: 20, border: '1px solid #ffcc80' }}>
-          <p style={{ margin: 0, color: '#ef6c00', fontSize: 14 }}>⏳ طلبك قيد المراجعة — سنتحقق من تحويل InstaPay وسنبدأ التجهيز قريباً.</p>
+        <div style={{ background: '#fff3e0', borderRadius: 10, padding: 14, marginBottom: 20, border: '1px solid #ffcc80' }}>
+          <p style={{ margin: 0, color: '#ef6c00', fontSize: 14 }}>⏳ طلبك قيد المراجعة — سنتحقق من تحويل InstaPay قريباً.</p>
         </div>
       )}
       <p style={{ fontSize: 13, color: '#aaa', marginBottom: 24 }}>🔄 سياسة الإرجاع: 15 يوم من تاريخ الطلب</p>

@@ -1,13 +1,12 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { Toaster } from 'react-hot-toast';
-import { CartProvider } from './context/CartContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
 import { LangProvider } from './context/LangContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
-
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -17,7 +16,6 @@ import OrderConfirmation from './pages/OrderConfirmation';
 import OrderTrack from './pages/OrderTrack';
 import Login from './pages/Login';
 import Register from './pages/Register';
-
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
@@ -25,15 +23,15 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminShipping from './pages/admin/AdminShipping';
 import AdminReports from './pages/admin/AdminReports';
 
-const ADMIN_PATH = import.meta.env.VITE_ADMIN_PATH || 'admin-panel';
+const AP = import.meta.env.VITE_ADMIN_PATH || 'admin-panel';
 
-function AdminGuard({ children }) {
+function Guard({ children }) {
   const { user, isAdmin } = useAuth();
-  if (!user || !isAdmin) return <Navigate to={`/${ADMIN_PATH}/login`} replace />;
+  if (!user || !isAdmin) return <Navigate to={`/${AP}/login`} replace />;
   return children;
 }
 
-function CustomerLayout({ children }) {
+function Layout({ children }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#fff' }}>
       <Header />
@@ -54,24 +52,22 @@ export default function App() {
             <HashRouter>
               <Toaster position="top-center" />
               <Routes>
-                <Route path="/" element={<CustomerLayout><Home /></CustomerLayout>} />
-                <Route path="/products" element={<CustomerLayout><Products /></CustomerLayout>} />
-                <Route path="/products/:slug" element={<CustomerLayout><ProductDetail /></CustomerLayout>} />
-                <Route path="/cart" element={<CustomerLayout><Cart /></CustomerLayout>} />
-                <Route path="/checkout" element={<CustomerLayout><Checkout /></CustomerLayout>} />
-                <Route path="/order-confirmation/:id" element={<CustomerLayout><OrderConfirmation /></CustomerLayout>} />
-                <Route path="/track/:id" element={<CustomerLayout><OrderTrack /></CustomerLayout>} />
-                <Route path="/login" element={<CustomerLayout><Login /></CustomerLayout>} />
-                <Route path="/register" element={<CustomerLayout><Register /></CustomerLayout>} />
-
-                <Route path={`/${ADMIN_PATH}/login`} element={<AdminLogin />} />
-                <Route path={`/${ADMIN_PATH}/dashboard`} element={<AdminGuard><AdminDashboard /></AdminGuard>} />
-                <Route path={`/${ADMIN_PATH}/products`} element={<AdminGuard><AdminProducts /></AdminGuard>} />
-                <Route path={`/${ADMIN_PATH}/orders`} element={<AdminGuard><AdminOrders /></AdminGuard>} />
-                <Route path={`/${ADMIN_PATH}/shipping`} element={<AdminGuard><AdminShipping /></AdminGuard>} />
-                <Route path={`/${ADMIN_PATH}/reports`} element={<AdminGuard><AdminReports /></AdminGuard>} />
-
-                <Route path="*" element={<CustomerLayout><div style={{textAlign:'center',padding:'60px 0'}}><h2>404</h2></div></CustomerLayout>} />
+                <Route path="/" element={<Layout><Home /></Layout>} />
+                <Route path="/products" element={<Layout><Products /></Layout>} />
+                <Route path="/products/:slug" element={<Layout><ProductDetail /></Layout>} />
+                <Route path="/cart" element={<Layout><Cart /></Layout>} />
+                <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
+                <Route path="/order-confirmation/:id" element={<Layout><OrderConfirmation /></Layout>} />
+                <Route path="/track/:id" element={<Layout><OrderTrack /></Layout>} />
+                <Route path="/login" element={<Layout><Login /></Layout>} />
+                <Route path="/register" element={<Layout><Register /></Layout>} />
+                <Route path={`/${AP}/login`} element={<AdminLogin />} />
+                <Route path={`/${AP}/dashboard`} element={<Guard><AdminDashboard /></Guard>} />
+                <Route path={`/${AP}/products`} element={<Guard><AdminProducts /></Guard>} />
+                <Route path={`/${AP}/orders`} element={<Guard><AdminOrders /></Guard>} />
+                <Route path={`/${AP}/shipping`} element={<Guard><AdminShipping /></Guard>} />
+                <Route path={`/${AP}/reports`} element={<Guard><AdminReports /></Guard>} />
+                <Route path="*" element={<Layout><div style={{textAlign:'center',padding:'80px 0'}}><h2>404</h2></div></Layout>} />
               </Routes>
             </HashRouter>
           </CartProvider>

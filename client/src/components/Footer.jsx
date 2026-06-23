@@ -16,7 +16,7 @@ export default function Footer() {
         </div>
         <div>
           <h4 style={{ color: '#f8ad9d', margin: '0 0 12px' }}>{t('followUs')}</h4>
-          <a href="https://www.instagram.com/abcalhawi123/#" target="_blank" rel="noopener noreferrer" style={L}>📸 Instagram</a>
+          <a href="https://www.instagram.com/abcalhawi123" target="_blank" rel="noopener noreferrer" style={L}>📸 Instagram</a>
           <a href="https://www.facebook.com/profile.php?id=61590921087512" target="_blank" rel="noopener noreferrer" style={L}>👍 Facebook</a>
           <a href="https://www.tiktok.com/@abcalhawi" target="_blank" rel="noopener noreferrer" style={L}>🎵 TikTok</a>
         </div>

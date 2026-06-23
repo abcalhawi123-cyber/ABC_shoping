@@ -45,3 +45,5 @@ export const exportReport = (fmt, s, e) => API.get(`/${A}/reports/export`, { par
 export const getPendingReviews = () => API.get('/reviews/admin/pending');
 export const approveReview = id => API.patch(`/reviews/${id}/approve`);
 export const deleteReview = id => API.delete(`/reviews/${id}`);
+
+export const requestReturn = (id, reason) => API.post(`/orders/${id}/return`, { reason });

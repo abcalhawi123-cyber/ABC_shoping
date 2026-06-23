@@ -14,6 +14,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import OrderTrack from './pages/OrderTrack';
+import MyOrders from './pages/MyOrders';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminLogin from './pages/admin/AdminLogin';
@@ -59,6 +60,7 @@ export default function App() {
                 <Route path="/checkout" element={<Layout><Checkout /></Layout>} />
                 <Route path="/order-confirmation/:id" element={<Layout><OrderConfirmation /></Layout>} />
                 <Route path="/track/:id" element={<Layout><OrderTrack /></Layout>} />
+                <Route path="/my-orders" element={<Layout><MyOrders /></Layout>} />
                 <Route path="/login" element={<Layout><Login /></Layout>} />
                 <Route path="/register" element={<Layout><Register /></Layout>} />
                 <Route path={`/${AP}/login`} element={<AdminLogin />} />

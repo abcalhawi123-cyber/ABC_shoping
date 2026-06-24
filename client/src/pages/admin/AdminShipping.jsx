@@ -68,7 +68,7 @@ export default function AdminShipping() {
         <div style={{ background: '#fff', borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', border: '1px solid #f0e8e8' }}>
           <h3 style={{ margin: '0 0 20px', color: '#1a3a5c' }}>{editId ? '✏️ تعديل' : '➕ إضافة محافظة'}</h3>
           <form onSubmit={submit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 14 }}>
               {[
                 { k: 'governorateAr', l: 'المحافظة (عربي)', p: 'القاهرة' },
                 { k: 'governorateEn', l: 'Governorate (EN)', p: 'Cairo' },

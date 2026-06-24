@@ -38,7 +38,7 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 16, marginBottom: 28 }}>
         {[
           { t: 'إجمالي الطلبات', v: salesStats.orderCount || 0, i: '📦', c: '#1a3a5c' },
           { t: 'إجمالي الإيرادات', v: `${(salesStats.totalRevenue || 0).toFixed(0)} ج.م`, i: '💰', c: '#3498db' },

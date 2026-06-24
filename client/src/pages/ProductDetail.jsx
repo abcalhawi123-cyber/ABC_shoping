@@ -17,85 +17,51 @@ export default function ProductDetail() {
 
   useEffect(() => {
     setLoading(true);
-    getProduct(slug)
-      .then(r => setProduct(r.data.data))
-      .catch(() => setProduct(null))
-      .finally(() => setLoading(false));
+    getProduct(slug).then(r => setProduct(r.data.data)).catch(() => setProduct(null)).finally(() => setLoading(false));
   }, [slug]);
 
-  if (loading) return (
-    <div style={{ textAlign: 'center', padding: '80px 0', color: '#888' }}>
-      {lang === 'ar' ? 'جاري التحميل...' : 'Loading...'}
-    </div>
-  );
-
-  if (!product) return (
-    <div style={{ textAlign: 'center', padding: '80px 0', color: '#e74c3c' }}>
-      {lang === 'ar' ? 'المنتج غير موجود' : 'Product not found'}
-    </div>
-  );
+  if (loading) return <div style={{ textAlign: 'center', padding: '80px 20px', color: '#888' }}>{lang === 'ar' ? 'جاري التحميل...' : 'Loading...'}</div>;
+  if (!product) return <div style={{ textAlign: 'center', padding: '80px 20px', color: '#e74c3c' }}>{lang === 'ar' ? 'المنتج غير موجود' : 'Product not found'}</div>;
 
   const name = product.name?.[lang] || product.name?.ar || '';
   const desc = product.description?.[lang] || product.description?.ar || '';
   const cat = product.category?.[lang] || product.category?.ar || '';
   const price = product.sellingPrice * (1 - (product.discount || 0) / 100);
 
-  const stockText = () => {
-    if (product.stock === 0) return { text: `✗ ${t('outOfStock')}`, color: '#e74c3c' };
-    if (product.stock < 5) return { text: `⚠ ${product.stock} ${t('onlyLeft')}`, color: '#e74c3c' };
-    return { text: lang === 'ar' ? `✓ متوفر (${product.stock} قطعة)` : `✓ In Stock (${product.stock} pcs)`, color: '#27ae60' };
-  };
-
-  const stock = stockText();
+  const stockInfo = product.stock === 0
+    ? { text: `✗ ${t('outOfStock')}`, color: '#e74c3c' }
+    : product.stock < 5
+    ? { text: `⚠ ${product.stock} ${t('onlyLeft')}`, color: '#e74c3c' }
+    : { text: lang === 'ar' ? `✓ متوفر (${product.stock} قطعة)` : `✓ In Stock (${product.stock})`, color: '#27ae60' };
 
   return (
     <>
       <Helmet>
         <title>{name} — ABC {lang === 'ar' ? 'الحاوي' : 'Al-Hawi'}</title>
         <meta name="description" content={product.metaDescription || desc.substring(0, 160)} />
-        <meta property="og:title" content={product.metaTitle || name} />
+        <meta property="og:title" content={name} />
         <meta property="og:image" content={product.images?.[0]?.url} />
         <meta property="og:type" content="product" />
         <script type="application/ld+json">{JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'Product',
-          name,
-          image: product.images?.map(i => i.url),
-          description: desc,
-          offers: {
-            '@type': 'Offer',
-            price: price.toFixed(2),
-            priceCurrency: 'EGP',
-            availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-          },
-          aggregateRating: product.reviewCount > 0 ? {
-            '@type': 'AggregateRating',
-            ratingValue: product.averageRating,
-            reviewCount: product.reviewCount,
-          } : undefined,
+          '@context': 'https://schema.org', '@type': 'Product', name,
+          image: product.images?.map(i => i.url), description: desc,
+          offers: { '@type': 'Offer', price: price.toFixed(2), priceCurrency: 'EGP', availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' },
+          aggregateRating: product.reviewCount > 0 ? { '@type': 'AggregateRating', ratingValue: product.averageRating, reviewCount: product.reviewCount } : undefined,
         })}</script>
       </Helmet>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, marginBottom: 40 }}>
+      {/* Responsive 2-col → 1-col on mobile */}
+      <div className="grid-2col" style={{ marginBottom: 40 }}>
         {/* Images */}
         <div>
           <div style={{ borderRadius: 14, overflow: 'hidden', aspectRatio: '1', background: '#faf5f5', marginBottom: 12 }}>
-            <img
-              src={product.images?.[img]?.url || ''}
-              alt={name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
+            <img src={product.images?.[img]?.url || ''} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           {product.images?.length > 1 && (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {product.images.map((im, i) => (
-                <img
-                  key={i}
-                  src={im.url}
-                  alt=""
-                  onClick={() => setImg(i)}
-                  style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8, cursor: 'pointer', border: i === img ? '2px solid #f8ad9d' : '2px solid transparent' }}
-                />
+                <img key={i} src={im.url} alt="" onClick={() => setImg(i)}
+                  style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, cursor: 'pointer', border: i === img ? '2px solid #f8ad9d' : '2px solid #eee' }} />
               ))}
             </div>
           )}
@@ -103,26 +69,21 @@ export default function ProductDetail() {
 
         {/* Info */}
         <div>
-          <p style={{ color: '#f8ad9d', fontWeight: 600, margin: '0 0 6px', fontSize: 14 }}>{cat}</p>
-          <h1 style={{ color: '#1a3a5c', margin: '0 0 14px', fontSize: 26, lineHeight: 1.3 }}>{name}</h1>
+          <p style={{ color: '#f8ad9d', fontWeight: 600, margin: '0 0 6px', fontSize: 13 }}>{cat}</p>
+          <h1 style={{ color: '#1a3a5c', margin: '0 0 12px', fontSize: 24, lineHeight: 1.3 }}>{name}</h1>
 
-          {/* Rating */}
           {product.averageRating > 0 && (
-            <div style={{ color: '#f39c12', fontSize: 18, marginBottom: 14 }}>
-              {'★'.repeat(Math.round(product.averageRating))}
-              {'☆'.repeat(5 - Math.round(product.averageRating))}
-              <span style={{ color: '#888', fontSize: 14, marginInlineStart: 8 }}>
-                ({product.reviewCount} {t('reviews')})
-              </span>
+            <div style={{ color: '#f39c12', fontSize: 17, marginBottom: 12 }}>
+              {'★'.repeat(Math.round(product.averageRating))}{'☆'.repeat(5 - Math.round(product.averageRating))}
+              <span style={{ color: '#888', fontSize: 13, marginInlineStart: 6 }}>({product.reviewCount} {t('reviews')})</span>
             </div>
           )}
 
-          {/* Price */}
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 16 }}>
-            <span style={{ fontSize: 30, fontWeight: 700, color: '#1a3a5c' }}>{price.toFixed(0)} ج.م</span>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 28, fontWeight: 700, color: '#1a3a5c' }}>{price.toFixed(0)} ج.م</span>
             {product.discount > 0 && (
               <>
-                <span style={{ textDecoration: 'line-through', color: '#aaa', fontSize: 18 }}>{product.sellingPrice} ج.م</span>
+                <span style={{ textDecoration: 'line-through', color: '#aaa', fontSize: 17 }}>{product.sellingPrice} ج.م</span>
                 <span style={{ background: '#ffeaa7', color: '#d35400', padding: '3px 10px', borderRadius: 12, fontSize: 13, fontWeight: 700 }}>
                   {lang === 'ar' ? `وفر ${product.discount}%` : `Save ${product.discount}%`}
                 </span>
@@ -130,37 +91,16 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Description */}
-          <p style={{ color: '#555', lineHeight: 1.8, marginBottom: 20, fontSize: 15 }}>{desc}</p>
+          <p style={{ color: '#555', lineHeight: 1.8, marginBottom: 16, fontSize: 15 }}>{desc}</p>
+          <p style={{ marginBottom: 18, fontWeight: 600, color: stockInfo.color, fontSize: 14 }}>{stockInfo.text}</p>
 
-          {/* Stock */}
-          <p style={{ marginBottom: 20, fontWeight: 600, color: stock.color, fontSize: 15 }}>{stock.text}</p>
-
-          {/* Add to cart */}
           <button
-            onClick={() => {
-              if (product.stock < 1) return;
-              dispatch({ type: 'ADD', item: product });
-              toast.success(lang === 'ar' ? 'تمت الإضافة للسلة ✓' : 'Added to cart ✓');
-            }}
+            onClick={() => { if (!product.stock) return; dispatch({ type: 'ADD', item: product }); toast.success(lang === 'ar' ? 'تمت الإضافة ✓' : 'Added ✓'); }}
             disabled={product.stock < 1}
-            style={{
-              width: '100%',
-              padding: '14px',
-              background: product.stock < 1 ? '#ccc' : '#1a3a5c',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 10,
-              fontSize: 16,
-              fontWeight: 700,
-              cursor: product.stock < 1 ? 'not-allowed' : 'pointer',
-              marginBottom: 10,
-              transition: 'background 0.2s',
-            }}
+            style={{ width: '100%', padding: '14px', background: product.stock < 1 ? '#ccc' : '#1a3a5c', color: '#fff', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: product.stock < 1 ? 'not-allowed' : 'pointer', marginBottom: 10 }}
           >
             {product.stock < 1 ? t('outOfStock') : t('addToCart')}
           </button>
-
           <p style={{ fontSize: 12, color: '#888', textAlign: 'center' }}>{t('returnPolicy')}</p>
         </div>
       </div>

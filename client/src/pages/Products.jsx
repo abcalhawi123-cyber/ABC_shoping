@@ -86,7 +86,7 @@ export default function Products() {
       </div>
 
       {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 20 }}>
+        <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 16 }}>
           {Array(8).fill(0).map((_, i) => (
             <div key={i} style={{ background: '#f5f5f5', borderRadius: 14, aspectRatio: '0.8', animation: 'pulse 1.5s ease-in-out infinite' }} />
           ))}
@@ -100,7 +100,7 @@ export default function Products() {
         </div>
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 20 }}>
+          <div className="products-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: 16 }}>
             {products.map(p => <ProductCard key={p._id} product={p} />)}
           </div>
           <Pagination page={pagination.page} pages={pagination.pages} onPageChange={go} />

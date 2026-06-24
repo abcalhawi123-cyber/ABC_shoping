@@ -30,7 +30,7 @@ export default function AdminReports() {
       <h2 style={{ color: '#1a3a5c', marginBottom: 24 }}>📈 التقارير والتحليلات</h2>
 
       {salesStats && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 28 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 16, marginBottom: 28 }}>
           {[
             { l: 'إجمالي الطلبات', v: salesStats.orderCount || 0, c: '#1a3a5c', i: '📦' },
             { l: 'إجمالي الإيرادات', v: `${(salesStats.totalRevenue || 0).toFixed(0)} ج.م`, c: '#3498db', i: '💰' },

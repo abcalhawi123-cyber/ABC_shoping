@@ -77,7 +77,7 @@ export default function AdminProducts() {
               </div>
               {TA('descriptionAr', 'الوصف (عربي)')}
               {TA('descriptionEn', 'Description (EN)')}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 12 }}>
                 <div>{F('costPrice', 'سعر التكلفة', 'number', '0')}</div>
                 <div>{F('sellingPrice', 'سعر البيع', 'number', '0')}</div>
                 <div>{F('discount', 'الخصم %', 'number', '0')}</div>

@@ -1,0 +1,90 @@
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Cairo', 'Segoe UI', sans-serif;
+  background: #fff;
+  color: #333;
+  -webkit-text-size-adjust: 100%;
+}
+
+img { max-width: 100%; height: auto; }
+
+/* ===== Responsive Grid Helpers ===== */
+.grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.grid-cart {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  align-items: start;
+}
+
+.grid-checkout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 32px;
+  align-items: start;
+}
+
+/* ===== Tablet (max 900px) ===== */
+@media (max-width: 900px) {
+  .grid-checkout {
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+  }
+}
+
+/* ===== Mobile (max 640px) ===== */
+@media (max-width: 640px) {
+  /* Grids go single column */
+  .grid-2col,
+  .grid-cart,
+  .grid-checkout {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Summary box not sticky on mobile */
+  .sticky-summary {
+    position: static !important;
+    order: -1; /* summary appears above form on mobile */
+  }
+
+  /* Reduce main padding */
+  main {
+    padding: 16px 12px !important;
+  }
+
+  /* Product grid: 2 columns on mobile */
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* Trust badges: 2 columns */
+  .trust-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Admin layout: hide sidebar, show top nav */
+  .admin-sidebar {
+    display: none !important;
+  }
+
+  .admin-main {
+    padding: 16px !important;
+  }
+}
+
+/* ===== Very small (max 380px) ===== */
+@media (max-width: 380px) {
+  .products-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

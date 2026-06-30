@@ -27,12 +27,12 @@ export default function AdminReports() {
 
   return (
     <AdminLayout>
-      <h2 style={{ color: '#1a3a5c', marginBottom: 24 }}>📈 التقارير والتحليلات</h2>
+      <h2 style={{ color: '#6D1A36', marginBottom: 24 }}>📈 التقارير والتحليلات</h2>
 
       {salesStats && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 16, marginBottom: 28 }}>
           {[
-            { l: 'إجمالي الطلبات', v: salesStats.orderCount || 0, c: '#1a3a5c', i: '📦' },
+            { l: 'إجمالي الطلبات', v: salesStats.orderCount || 0, c: '#6D1A36', i: '📦' },
             { l: 'إجمالي الإيرادات', v: `${(salesStats.totalRevenue || 0).toFixed(0)} ج.م`, c: '#3498db', i: '💰' },
             { l: 'صافي الأرباح', v: `${(profitStats?.totalProfit || 0).toFixed(0)} ج.م`, c: '#27ae60', i: '📈' },
             { l: 'متوسط الطلب', v: `${(salesStats.avgOrder || 0).toFixed(0)} ج.م`, c: '#9b59b6', i: '🛒' },
@@ -47,7 +47,7 @@ export default function AdminReports() {
 
       {salesStats && profitStats && (
         <div style={{ background: '#fff', borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
-          <h3 style={{ margin: '0 0 16px', color: '#1a3a5c' }}>📊 نسبة المبيعات / التكلفة / الأرباح</h3>
+          <h3 style={{ margin: '0 0 16px', color: '#6D1A36' }}>📊 نسبة المبيعات / التكلفة / الأرباح</h3>
           {(() => {
             const rev = salesStats.totalRevenue || 0, profit = profitStats.totalProfit || 0, cost = profitStats.totalCost || 0, total = rev || 1;
             return [
@@ -75,7 +75,7 @@ export default function AdminReports() {
           {topProducts?.map((p, i) => (
             <div key={p._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid #f5f5f5' }}>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <span style={{ background: '#f8ad9d', color: '#1a3a5c', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>#{i + 1}</span>
+                <span style={{ background: '#f8ad9d', color: '#6D1A36', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>#{i + 1}</span>
                 <div><p style={{ margin: 0, fontWeight: 600, fontSize: 14 }}>{p.name?.ar}</p><p style={{ margin: 0, fontSize: 12, color: '#888' }}>{p.sold} مبيعة</p></div>
               </div>
               <span style={{ color: '#27ae60', fontWeight: 700, fontSize: 14 }}>+{(p.sellingPrice - p.costPrice).toFixed(0)} ج.م</span>
@@ -94,7 +94,7 @@ export default function AdminReports() {
       </div>
 
       <div style={card}>
-        <h3 style={{ margin: '0 0 16px', color: '#1a3a5c' }}>📤 تصدير التقارير</h3>
+        <h3 style={{ margin: '0 0 16px', color: '#6D1A36' }}>📤 تصدير التقارير</h3>
         <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div><label style={{ display: 'block', marginBottom: 6, fontWeight: 600, color: '#555', fontSize: 13 }}>من تاريخ</label><input type="date" value={start} onChange={e => setStart(e.target.value)} style={{ padding: '10px 12px', border: '1px solid #ddd', borderRadius: 8, fontSize: 14, background: '#fafafa' }} /></div>
           <div><label style={{ display: 'block', marginBottom: 6, fontWeight: 600, color: '#555', fontSize: 13 }}>إلى تاريخ</label><input type="date" value={end} onChange={e => setEnd(e.target.value)} style={{ padding: '10px 12px', border: '1px solid #ddd', borderRadius: 8, fontSize: 14, background: '#fafafa' }} /></div>
@@ -107,4 +107,4 @@ export default function AdminReports() {
   );
 }
 const card = { background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 2px 10px rgba(0,0,0,0.06)' };
-const cT = { margin: '0 0 16px', color: '#1a3a5c', borderRight: '4px solid #f8ad9d', paddingRight: 10 };
+const cT = { margin: '0 0 16px', color: '#6D1A36', borderRight: '4px solid #f8ad9d', paddingRight: 10 };

@@ -29,7 +29,7 @@ export default function Login() {
   return (
     <div style={{ maxWidth: 420, margin: '40px auto' }}>
       <div style={{ background: '#fff', borderRadius: 16, padding: 36, boxShadow: '0 4px 24px rgba(0,0,0,0.1)' }}>
-        <h2 style={{ color: '#1a3a5c', textAlign: 'center', marginBottom: 28 }}>
+        <h2 style={{ color: '#6D1A36', textAlign: 'center', marginBottom: 28 }}>
           {lang === 'ar' ? 'تسجيل الدخول' : 'Login'}
         </h2>
         <form onSubmit={submit}>
@@ -53,7 +53,7 @@ export default function Login() {
         </p>
         <p style={{ textAlign: 'center', marginTop: 8, fontSize: 13, color: '#aaa' }}>
           {lang === 'ar' ? 'أو' : 'or'}{' '}
-          <Link to="/checkout" style={{ color: '#1a3a5c' }}>
+          <Link to="/checkout" style={{ color: '#6D1A36' }}>
             {lang === 'ar' ? 'تسوق كزائر بدون حساب' : 'checkout as guest'}
           </Link>
         </p>
@@ -63,4 +63,4 @@ export default function Login() {
 }
 const ls = { display: 'block', marginBottom: 6, fontWeight: 600, color: '#555', fontSize: 14 };
 const is = { width: '100%', padding: '11px 12px', border: '1px solid #ddd', borderRadius: 8, fontSize: 14, background: '#fafafa', boxSizing: 'border-box' };
-const bs = { width: '100%', padding: 13, background: '#1a3a5c', color: '#fff', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: 'pointer', marginTop: 8 };
+const bs = { width: '100%', padding: 13, background: '#6D1A36', color: '#fff', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: 'pointer', marginTop: 8 };

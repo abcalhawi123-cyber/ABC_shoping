@@ -40,7 +40,7 @@ export default function AdminDashboard() {
     <AdminLayout>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 16, marginBottom: 28 }}>
         {[
-          { t: 'إجمالي الطلبات', v: salesStats.orderCount || 0, i: '📦', c: '#1a3a5c' },
+          { t: 'إجمالي الطلبات', v: salesStats.orderCount || 0, i: '📦', c: '#6D1A36' },
           { t: 'إجمالي الإيرادات', v: `${(salesStats.totalRevenue || 0).toFixed(0)} ج.م`, i: '💰', c: '#3498db' },
           { t: 'صافي الأرباح', v: `${(profitStats?.totalProfit || 0).toFixed(0)} ج.م`, i: '📈', c: '#27ae60' },
           { t: 'InstaPay معلق', v: pendingInstapayApprovals, i: '⏳', c: pendingInstapayApprovals > 0 ? '#e74c3c' : '#27ae60' },
@@ -86,7 +86,7 @@ export default function AdminDashboard() {
           <h3 style={cT}>🔥 الأكثر مبيعاً</h3>
           {topProducts?.map((p, i) => (
             <div key={p._id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <span style={{ background: '#f8ad9d', color: '#1a3a5c', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>#{i + 1}</span>
+              <span style={{ background: '#f8ad9d', color: '#6D1A36', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>#{i + 1}</span>
               {p.images?.[0]?.url && <img src={p.images[0].url} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
               <div style={{ flex: 1 }}>
                 <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{p.name?.ar}</p>
@@ -100,7 +100,7 @@ export default function AdminDashboard() {
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h3 style={{ ...cT, margin: 0 }}>📋 آخر الطلبات</h3>
-          <Link to="../orders" style={{ color: '#1a3a5c', fontSize: 13, textDecoration: 'none' }}>عرض الكل ←</Link>
+          <Link to="../orders" style={{ color: '#6D1A36', fontSize: 13, textDecoration: 'none' }}>عرض الكل ←</Link>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
@@ -130,4 +130,4 @@ export default function AdminDashboard() {
   );
 }
 const card = { background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #f0e8e8' };
-const cT = { color: '#1a3a5c', borderRight: '4px solid #f8ad9d', paddingRight: 10, margin: '0 0 16px' };
+const cT = { color: '#6D1A36', borderRight: '4px solid #f8ad9d', paddingRight: 10, margin: '0 0 16px' };

@@ -24,7 +24,7 @@ const SORT_OPTIONS = {
 };
 
 export default function Products() {
-  const { t, lang } = useLang();
+  const { t, lang, brand } = useLang();
   const [sp, setSp] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
@@ -58,11 +58,11 @@ export default function Products() {
   return (
     <>
       <Helmet>
-        <title>{t('products')} — ABC {lang === 'ar' ? 'الحاوي' : 'Al-Hawi'}</title>
+        <title>{t('products')} — {brand}</title>
       </Helmet>
 
       <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap', alignItems: 'center' }}>
-        <h1 style={{ margin: 0, color: '#1a3a5c', fontSize: 22 }}>
+        <h1 style={{ margin: 0, color: '#6D1A36', fontSize: 22 }}>
           {q ? `${lang === 'ar' ? 'نتائج:' : 'Results:'} "${q}"` : t('products')}
           {pagination.total > 0 && (
             <span style={{ fontSize: 14, color: '#888', marginInlineStart: 8 }}>({pagination.total})</span>
@@ -71,7 +71,7 @@ export default function Products() {
 
         {/* Category tag */}
         {category && (
-          <span style={{ padding: '5px 12px', background: '#f8ad9d', color: '#1a3a5c', borderRadius: 16, fontSize: 13, fontWeight: 600 }}>
+          <span style={{ padding: '5px 12px', background: '#f8ad9d', color: '#6D1A36', borderRadius: 16, fontSize: 13, fontWeight: 600 }}>
             {category}
           </span>
         )}

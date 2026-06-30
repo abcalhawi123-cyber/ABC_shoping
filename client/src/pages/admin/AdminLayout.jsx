@@ -1,118 +1,85 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLang } from '../../context/LangContext';
 
 const AP = import.meta.env.VITE_ADMIN_PATH || 'admin-panel';
-
-const links = [
-  { to: 'dashboard', label: '📊 لوحة التحكم' },
-  { to: 'products', label: '📦 المنتجات' },
-  { to: 'orders', label: '🛒 الطلبات' },
-  { to: 'shipping', label: '🚚 الشحن' },
-  { to: 'reports', label: '📈 التقارير' },
-];
+const BG = '#6D1A36';
 
 export default function AdminLayout({ children }) {
   const { logoutUser } = useAuth();
+  const { t, brand } = useLang();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const links = [
+    { to: 'dashboard', label: `📊 ${t('dashboard')}` },
+    { to: 'products',  label: `📦 ${t('products')}` },
+    { to: 'orders',    label: `🛒 ${t('myOrders').replace('طلباتي','الطلبات').replace('My Orders','Orders')}` },
+    { to: 'categories',label: `🏷️ ${t('adminCategories')}` },
+    { to: 'returns',   label: `🔄 ${t('adminReturns')}` },
+    { to: 'shipping',  label: `🚚 ${t('shippingFee').replace('رسوم الشحن','الشحن').replace('Shipping Fee','Shipping')}` },
+    { to: 'reports',   label: `📈 ${t('totalRevenue').replace('إجمالي الإيرادات','التقارير').replace('Total Revenue','Reports')}` },
+  ];
 
   const out = () => { logoutUser(); navigate(`/${AP}/login`); };
   const close = () => setSidebarOpen(false);
 
+  const Sidebar = ({ onNav }) => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ textAlign: 'center', marginBottom: 24, padding: '0 16px' }}>
+        <h2 style={{ color: '#fff', margin: 0, fontSize: 20, fontWeight: 800, letterSpacing: 1 }}>{brand}</h2>
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: '4px 0 0' }}>Admin Panel</p>
+      </div>
+      <nav style={{ flex: 1 }}>
+        {links.map(l => (
+          <NavLink key={l.to} to={`/${AP}/${l.to}`} onClick={onNav}
+            style={({ isActive }) => ({
+              display: 'block', padding: '12px 20px',
+              color: isActive ? '#fff' : 'rgba(255,255,255,0.75)',
+              textDecoration: 'none', fontSize: 14,
+              fontWeight: isActive ? 700 : 400,
+              background: isActive ? 'rgba(255,255,255,0.15)' : 'transparent',
+              borderRight: isActive ? '3px solid #fff' : '3px solid transparent',
+              transition: 'all 0.15s',
+            })}>
+            {l.label}
+          </NavLink>
+        ))}
+      </nav>
+      <button onClick={out} style={{ margin: '0 16px 16px', padding: '10px', background: 'rgba(0,0,0,0.2)', color: 'rgba(255,255,255,0.8)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>
+        🚪 {t('logout')}
+      </button>
+    </div>
+  );
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', direction: 'rtl', position: 'relative' }}>
-
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          onClick={close}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 99, display: 'none' }}
-          className="sidebar-overlay"
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        className="admin-sidebar"
-        style={{
-          width: 220,
-          background: '#1a3a5c',
-          color: '#fff',
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '20px 0',
-          flexShrink: 0,
-          position: 'sticky',
-          top: 0,
-          height: '100vh',
-          overflowY: 'auto',
-        }}
-      >
-        <div style={{ textAlign: 'center', marginBottom: 24, padding: '0 16px' }}>
-          <h2 style={{ color: '#f8ad9d', margin: 0, fontSize: 18 }}>ABC الحاوي</h2>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: '4px 0 0' }}>لوحة الإدارة</p>
-        </div>
-
-        <nav style={{ flex: 1 }}>
-          {links.map(l => (
-            <NavLink
-              key={l.to}
-              to={`/${AP}/${l.to}`}
-              onClick={close}
-              style={({ isActive }) => ({
-                display: 'block',
-                padding: '12px 20px',
-                color: isActive ? '#f8ad9d' : 'rgba(255,255,255,0.8)',
-                textDecoration: 'none',
-                fontSize: 14,
-                fontWeight: isActive ? 700 : 400,
-                background: isActive ? 'rgba(248,173,157,0.1)' : 'transparent',
-                borderRight: isActive ? '3px solid #f8ad9d' : '3px solid transparent',
-                transition: 'all 0.15s',
-              })}
-            >
-              {l.label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <button onClick={out} style={{ margin: '0 16px 16px', padding: '10px', background: 'rgba(231,76,60,0.2)', color: '#ff8080', border: '1px solid rgba(231,76,60,0.3)', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}>
-          🚪 تسجيل الخروج
-        </button>
+    <div style={{ display: 'flex', minHeight: '100vh', direction: 'rtl' }}>
+      {/* Desktop Sidebar */}
+      <aside className="admin-sidebar" style={{ width: 220, background: BG, flexShrink: 0, position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
+        <Sidebar onNav={() => {}} />
       </aside>
 
-      {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {/* Mobile top bar */}
-        <div className="admin-mobile-bar" style={{ display: 'none', background: '#1a3a5c', color: '#fff', padding: '12px 16px', alignItems: 'center', gap: 12, position: 'sticky', top: 0, zIndex: 50 }}>
-          <button onClick={() => setSidebarOpen(o => !o)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer', padding: 0 }}>
-            ☰
-          </button>
-          <span style={{ color: '#f8ad9d', fontWeight: 700 }}>ABC الحاوي — الإدارة</span>
-          <button onClick={out} style={{ marginInlineStart: 'auto', background: 'rgba(231,76,60,0.3)', border: 'none', color: '#ff8080', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>
-            خروج
-          </button>
+        <div className="admin-mobile-bar" style={{ display: 'none', background: BG, color: '#fff', padding: '12px 16px', alignItems: 'center', gap: 12, position: 'sticky', top: 0, zIndex: 50 }}>
+          <button onClick={() => setSidebarOpen(o => !o)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer', padding: 0 }}>☰</button>
+          <span style={{ fontWeight: 800, fontSize: 16 }}>{brand}</span>
+          <button onClick={out} style={{ marginInlineStart: 'auto', background: 'rgba(0,0,0,0.2)', border: 'none', color: '#fff', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}>{t('logout')}</button>
         </div>
 
-        {/* Mobile sidebar drawer */}
+        {/* Mobile drawer */}
         {sidebarOpen && (
-          <div style={{ position: 'fixed', top: 0, right: 0, width: 240, height: '100vh', background: '#1a3a5c', zIndex: 100, display: 'flex', flexDirection: 'column', padding: '20px 0', boxShadow: '-4px 0 20px rgba(0,0,0,0.3)' }}>
-            <div style={{ textAlign: 'center', marginBottom: 20, padding: '0 16px' }}>
-              <h2 style={{ color: '#f8ad9d', margin: 0, fontSize: 18 }}>ABC الحاوي</h2>
-              <button onClick={close} style={{ position: 'absolute', top: 16, left: 16, background: 'none', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer' }}>✕</button>
+          <>
+            <div onClick={close} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 98 }} />
+            <div style={{ position: 'fixed', top: 0, right: 0, width: 240, height: '100vh', background: BG, zIndex: 99, overflowY: 'auto' }}>
+              <button onClick={close} style={{ position: 'absolute', top: 12, left: 12, background: 'none', border: 'none', color: '#fff', fontSize: 22, cursor: 'pointer' }}>✕</button>
+              <div style={{ marginTop: 50 }}><Sidebar onNav={close} /></div>
             </div>
-            {links.map(l => (
-              <NavLink key={l.to} to={`/${AP}/${l.to}`} onClick={close} style={({ isActive }) => ({
-                display: 'block', padding: '14px 20px', color: isActive ? '#f8ad9d' : '#fff', textDecoration: 'none', fontSize: 15, fontWeight: isActive ? 700 : 400, borderBottom: '1px solid rgba(255,255,255,0.08)',
-              })}>
-                {l.label}
-              </NavLink>
-            ))}
-          </div>
+          </>
         )}
 
-        <main className="admin-main" style={{ flex: 1, background: '#f0f2f5', padding: '28px 24px', overflowY: 'auto' }}>
+        <main className="admin-main" style={{ flex: 1, background: '#f4f0f1', padding: '28px 24px', overflowY: 'auto' }}>
           {children}
         </main>
       </div>
@@ -122,7 +89,6 @@ export default function AdminLayout({ children }) {
           .admin-sidebar { display: none !important; }
           .admin-mobile-bar { display: flex !important; }
           .admin-main { padding: 16px !important; }
-          .sidebar-overlay { display: block !important; }
         }
       `}</style>
     </div>

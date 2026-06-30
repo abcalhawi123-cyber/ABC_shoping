@@ -8,7 +8,7 @@ import { getShippingZones, placeOrder } from '../api';
 import toast from 'react-hot-toast';
 
 export default function Checkout() {
-  const { t, lang } = useLang();
+  const { t, lang, brand } = useLang();
   const { cart, subtotal, dispatch } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -62,8 +62,8 @@ export default function Checkout() {
 
   return (
     <>
-      <Helmet><title>{t('checkout')} — ABC الحاوي</title></Helmet>
-      <h1 style={{ color: '#1a3a5c', marginBottom: 20, fontSize: 22 }}>{t('checkout')}</h1>
+      <Helmet><title>{t('checkout')} — {brand}</title></Helmet>
+      <h1 style={{ color: '#6D1A36', marginBottom: 20, fontSize: 22 }}>{t('checkout')}</h1>
 
       {/* Responsive: form + summary stack on mobile */}
       <div className="grid-checkout">
@@ -105,7 +105,7 @@ export default function Checkout() {
             ))}
             {pay === 'instapay' && (
               <div style={{ background: '#f0f8ff', borderRadius: 10, padding: 14, marginTop: 8, border: '1px solid #bbdefb' }}>
-                <p style={{ margin: '0 0 12px', fontSize: 14, color: '#1a3a5c', fontWeight: 600 }}>
+                <p style={{ margin: '0 0 12px', fontSize: 14, color: '#6D1A36', fontWeight: 600 }}>
                   📲 {lang === 'ar' ? 'حول المبلغ' : 'Transfer'} <strong>{total.toFixed(0)} ج.م</strong> {lang === 'ar' ? 'على InstaPay' : 'via InstaPay'}
                 </p>
                 {F('instapayTransactionId', t('transactionId'))}
@@ -124,7 +124,7 @@ export default function Checkout() {
             )}
           </div>
 
-          <button type="submit" disabled={busy} style={{ width: '100%', padding: '15px', background: busy ? '#aaa' : '#1a3a5c', color: '#fff', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer' }}>
+          <button type="submit" disabled={busy} style={{ width: '100%', padding: '15px', background: busy ? '#aaa' : '#6D1A36', color: '#fff', border: 'none', borderRadius: 10, fontSize: 16, fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer' }}>
             {busy ? (lang === 'ar' ? 'جاري المعالجة...' : 'Processing...') : t('placeOrder')}
           </button>
         </form>
@@ -152,10 +152,10 @@ export default function Checkout() {
               <span style={{ color: '#555' }}>{t('shippingFee')}</span>
               <span style={{ color: zone ? '#27ae60' : '#888' }}>{zone ? `${zone.price} ج.م` : '—'}</span>
             </div>
-            <hr style={{ border: 'none', borderTop: '2px solid #1a3a5c', margin: '0 0 12px' }} />
+            <hr style={{ border: 'none', borderTop: '2px solid #6D1A36', margin: '0 0 12px' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 20 }}>
               <span>{t('total')}</span>
-              <span style={{ color: '#1a3a5c' }}>{total.toFixed(0)} ج.م</span>
+              <span style={{ color: '#6D1A36' }}>{total.toFixed(0)} ج.م</span>
             </div>
             <p style={{ fontSize: 12, color: '#888', marginTop: 10, textAlign: 'center' }}>{t('returnPolicy')}</p>
           </div>
@@ -166,6 +166,6 @@ export default function Checkout() {
 }
 
 const sec = { background: '#fff', borderRadius: 12, padding: 18, marginBottom: 16, boxShadow: '0 1px 8px rgba(0,0,0,0.06)', border: '1px solid #f0e8e8' };
-const secT = { margin: '0 0 14px', color: '#1a3a5c', fontSize: 16, fontWeight: 700 };
+const secT = { margin: '0 0 14px', color: '#6D1A36', fontSize: 16, fontWeight: 700 };
 const is = { width: '100%', padding: '11px 12px', border: '1px solid #ddd', borderRadius: 8, fontSize: 14, boxSizing: 'border-box', background: '#fafafa' };
 const ls = { display: 'block', marginBottom: 6, fontWeight: 600, color: '#555', fontSize: 14 };

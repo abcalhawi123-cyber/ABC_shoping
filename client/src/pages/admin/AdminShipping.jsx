@@ -57,16 +57,16 @@ export default function AdminShipping() {
   return (
     <AdminLayout>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h2 style={{ margin: 0, color: '#1a3a5c' }}>🚚 إدارة الشحن</h2>
+        <h2 style={{ margin: 0, color: '#6D1A36' }}>🚚 إدارة الشحن</h2>
         <div style={{ display: 'flex', gap: 10 }}>
           {zones.length === 0 && <button onClick={seed} disabled={seeding} style={{ padding: '10px 18px', background: '#27ae60', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>{seeding ? 'جاري الإضافة...' : '🇪🇬 إضافة كل محافظات مصر'}</button>}
-          <button onClick={openAdd} style={{ padding: '10px 18px', background: '#1a3a5c', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>+ إضافة محافظة</button>
+          <button onClick={openAdd} style={{ padding: '10px 18px', background: '#6D1A36', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>+ إضافة محافظة</button>
         </div>
       </div>
 
       {showForm && (
         <div style={{ background: '#fff', borderRadius: 12, padding: 24, marginBottom: 24, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', border: '1px solid #f0e8e8' }}>
-          <h3 style={{ margin: '0 0 20px', color: '#1a3a5c' }}>{editId ? '✏️ تعديل' : '➕ إضافة محافظة'}</h3>
+          <h3 style={{ margin: '0 0 20px', color: '#6D1A36' }}>{editId ? '✏️ تعديل' : '➕ إضافة محافظة'}</h3>
           <form onSubmit={submit}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 14 }}>
               {[
@@ -83,7 +83,7 @@ export default function AdminShipping() {
               ))}
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-              <button type="submit" style={{ padding: '10px 18px', background: '#1a3a5c', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>💾 حفظ</button>
+              <button type="submit" style={{ padding: '10px 18px', background: '#6D1A36', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>💾 حفظ</button>
               <button type="button" onClick={() => setShowForm(false)} style={{ padding: '10px 18px', background: '#f5f5f5', color: '#555', border: '1px solid #ddd', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>إلغاء</button>
             </div>
           </form>
@@ -101,7 +101,7 @@ export default function AdminShipping() {
                 <tr key={z._id} style={{ borderBottom: '1px solid #f5f5f5' }}>
                   <td style={{ padding: '12px 16px', fontWeight: 600 }}>{z.governorate.ar}</td>
                   <td style={{ padding: '12px 16px', color: '#666' }}>{z.governorate.en}</td>
-                  <td style={{ padding: '12px 16px', fontWeight: 700, color: '#1a3a5c' }}>{z.price} ج.م</td>
+                  <td style={{ padding: '12px 16px', fontWeight: 700, color: '#6D1A36' }}>{z.price} ج.م</td>
                   <td style={{ padding: '12px 16px', color: '#555' }}>{z.estimatedDays.min}–{z.estimatedDays.max} أيام</td>
                   <td style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', gap: 8 }}>

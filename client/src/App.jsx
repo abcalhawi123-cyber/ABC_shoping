@@ -7,6 +7,8 @@ import { CartProvider } from './context/CartContext';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
+
+// Customer pages
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
@@ -17,10 +19,14 @@ import OrderTrack from './pages/OrderTrack';
 import MyOrders from './pages/MyOrders';
 import Login from './pages/Login';
 import Register from './pages/Register';
+
+// Admin pages
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminReturns from './pages/admin/AdminReturns';
 import AdminShipping from './pages/admin/AdminShipping';
 import AdminReports from './pages/admin/AdminReports';
 
@@ -51,8 +57,9 @@ export default function App() {
         <AuthProvider>
           <CartProvider>
             <HashRouter>
-              <Toaster position="top-center" />
+              <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
               <Routes>
+                {/* Customer routes */}
                 <Route path="/" element={<Layout><Home /></Layout>} />
                 <Route path="/products" element={<Layout><Products /></Layout>} />
                 <Route path="/products/:slug" element={<Layout><ProductDetail /></Layout>} />
@@ -63,13 +70,18 @@ export default function App() {
                 <Route path="/my-orders" element={<Layout><MyOrders /></Layout>} />
                 <Route path="/login" element={<Layout><Login /></Layout>} />
                 <Route path="/register" element={<Layout><Register /></Layout>} />
+
+                {/* Admin routes */}
                 <Route path={`/${AP}/login`} element={<AdminLogin />} />
                 <Route path={`/${AP}/dashboard`} element={<Guard><AdminDashboard /></Guard>} />
                 <Route path={`/${AP}/products`} element={<Guard><AdminProducts /></Guard>} />
                 <Route path={`/${AP}/orders`} element={<Guard><AdminOrders /></Guard>} />
+                <Route path={`/${AP}/categories`} element={<Guard><AdminCategories /></Guard>} />
+                <Route path={`/${AP}/returns`} element={<Guard><AdminReturns /></Guard>} />
                 <Route path={`/${AP}/shipping`} element={<Guard><AdminShipping /></Guard>} />
                 <Route path={`/${AP}/reports`} element={<Guard><AdminReports /></Guard>} />
-                <Route path="*" element={<Layout><div style={{textAlign:'center',padding:'80px 0'}}><h2>404</h2></div></Layout>} />
+
+                <Route path="*" element={<Layout><div style={{ textAlign: 'center', padding: '80px 0' }}><h2 style={{ color: '#6D1A36' }}>404</h2></div></Layout>} />
               </Routes>
             </HashRouter>
           </CartProvider>

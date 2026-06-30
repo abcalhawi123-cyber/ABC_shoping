@@ -16,7 +16,7 @@ export default function OrderConfirmation() {
         {lang === 'ar' ? 'تم تأكيد طلبك!' : 'Order Confirmed!'}
       </h1>
       <p style={{ color: '#888', marginBottom: 20, fontSize: 14 }}>
-        {lang === 'ar' ? 'رقم الطلب:' : 'Order ID:'} <strong style={{ color: '#1a3a5c' }}>{id?.slice(-8).toUpperCase()}</strong>
+        {lang === 'ar' ? 'رقم الطلب:' : 'Order ID:'} <strong style={{ color: '#6D1A36' }}>{id?.slice(-8).toUpperCase()}</strong>
       </p>
 
       {order && (
@@ -39,7 +39,7 @@ export default function OrderConfirmation() {
       <p style={{ fontSize: 12, color: '#aaa', marginBottom: 20 }}>{t('returnPolicy')}</p>
 
       <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-        <Link to={`/track/${id}`} style={{ padding: '11px 20px', background: '#1a3a5c', color: '#fff', textDecoration: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}>
+        <Link to={`/track/${id}`} style={{ padding: '11px 20px', background: '#6D1A36', color: '#fff', textDecoration: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}>
           {t('trackOrder')}
         </Link>
         <Link to="/my-orders" style={{ padding: '11px 20px', background: '#e3f2fd', color: '#1565c0', textDecoration: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAdminProducts, createProduct, updateProduct, deleteProduct } from '../../api';
+import { getAdminProducts, createProduct, updateProduct, deleteProduct, getCategories } from '../../api'; // FIX Bug 6
 import toast from 'react-hot-toast';
 import AdminLayout from './AdminLayout';
 import { useLang } from '../../context/LangContext';
@@ -19,12 +19,13 @@ export default function AdminProducts() {
   const [busy, setBusy] = useState(false);
   // Color variants state
   const [variants, setVariants] = useState([]); // [{color:'', quantity:0}]
+  const [categories, setCategories] = useState([]); // FIX Bug 6: for centralized category dropdown
 
   const load = (page=1) => {
     setLoading(true);
     getAdminProducts({ page }).then(r => { setProducts(r.data.data); setPagination(r.data.pagination); }).catch(() => toast.error('فشل')).finally(() => setLoading(false));
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); getCategories().then(r => setCategories(r.data.data)).catch(() => {}); }, []); // FIX Bug 6
 
   const openAdd = () => { setEditing(null); setForm(EF); setImages([]); setVariants([]); setShowForm(true); };
   const openEdit = p => {
@@ -41,6 +42,7 @@ export default function AdminProducts() {
 
   const submit = async e => {
     e.preventDefault();
+    if (!form.categoryAr || !form.categoryEn) return toast.error(lang === 'ar' ? 'اختر الفئة' : 'Select a category'); // FIX Bug 6
     if (variants.length === 0) return toast.error(lang === 'ar' ? 'أضف لون وكمية واحدة على الأقل' : 'Add at least one color variant');
     if (variants.some(v => !v.color.trim())) return toast.error(lang === 'ar' ? 'أدخل اسم اللون لكل لون' : 'Enter color name for all variants');
     setBusy(true);
@@ -80,18 +82,40 @@ export default function AdminProducts() {
               <button onClick={() => setShowForm(false)} style={{ background:'none', border:'none', fontSize:22, cursor:'pointer', color:'#888' }}>✕</button>
             </div>
             <form onSubmit={submit}>
+              {/* Name fields */}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
                 {[
                   { k:'nameAr', l:`${lang==='ar'?'اسم المنتج (عربي)':'Product Name (AR)'} — ${lang==='ar'?'اكتبه يدوياً':'type manually'}`, p:lang==='ar'?'مثل: دبدوب':'e.g. Teddy Bear' },
                   { k:'nameEn', l:`Product Name (EN) — type manually`, p:'e.g. Plush Teddy Bear' },
-                  { k:'categoryAr', l:`${lang==='ar'?'الفئة (عربي)':'Category (AR)'} — ${lang==='ar'?'اكتبها يدوياً':'type manually'}`, p:lang==='ar'?'مثل: ألعاب قطنية':'e.g. Cotton Toys' },
-                  { k:'categoryEn', l:`Category (EN) — type manually`, p:'e.g. Plush Toys' },
                 ].map(f => (
                   <div key={f.k}>
                     <label style={ls}>{f.l}</label>
                     <input value={form[f.k]} onChange={e => setForm({...form,[f.k]:e.target.value})} placeholder={f.p} style={is} />
                   </div>
                 ))}
+              </div>
+
+              {/* FIX Bug 6: Category dropdown from centralized Category list */}
+              <div style={{ marginBottom:14 }}>
+                <label style={ls}>{lang==='ar'?'الفئة':'Category'}</label>
+                <select
+                  value={form.categoryAr}
+                  onChange={e => {
+                    const cat = categories.find(c => c.name.ar === e.target.value);
+                    setForm({ ...form, categoryAr: cat?.name.ar || '', categoryEn: cat?.name.en || '' });
+                  }}
+                  style={is}
+                >
+                  <option value="">{lang==='ar'?'اختر الفئة':'Select category'}</option>
+                  {categories.map(c => (
+                    <option key={c._id} value={c.name.ar}>{lang==='ar'?c.name.ar:c.name.en}</option>
+                  ))}
+                </select>
+                {categories.length === 0 && (
+                  <p style={{ fontSize:11, color:'#c0392b', marginTop:4 }}>
+                    ⚠ {lang==='ar'?'لا توجد فئات — أضفها من صفحة الأصناف أولاً':'No categories — add them in the Categories page first'}
+                  </p>
+                )}
               </div>
               <div style={{ marginBottom:14 }}>
                 <label style={ls}>{lang==='ar'?'الوصف (عربي)':'Description (AR)'}</label>

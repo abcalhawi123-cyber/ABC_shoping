@@ -8,6 +8,7 @@ const orderItemSchema = new mongoose.Schema({
   },
   name: { ar: String, en: String },        // Snapshot at time of purchase
   image: String,
+  selectedColor: { type: String, default: null }, // FIX Bug 2: which color variant was purchased
   quantity: { type: Number, required: true, min: 1 },
   unitPrice: { type: Number, required: true },     // effectivePrice at purchase time
   costPrice: { type: Number, required: true },     // for profit calc
@@ -121,25 +122,14 @@ orderSchema.virtual('canReturn').get(function () {
 
 // ── Hooks ─────────────────────────────────────────────────
 
-// When status changes to 'مرتجع', restock items automatically
-orderSchema.pre('save', async function (next) {
-  if (this.isModified('status') && this.status === 'مرتجع') {
-    const Product = mongoose.model('Product');
-    for (const item of this.items) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: item.quantity, sold: -item.quantity },
-      });
-    }
-    // Mark return no longer eligible (can't return twice)
-    this.isReturnEligible = false;
-    this.returnApprovedAt = new Date();
-  }
-
-  // Push to status history on every status change
+// FIX Bug 4+7: Bulk restock removed. Restocking is now handled
+// exclusively per-item via return.routes.js PATCH /:id, which
+// correctly respects color variants and prevents double-restock.
+// This hook ONLY tracks status history.
+orderSchema.pre('save', function (next) {
   if (this.isModified('status')) {
     this.statusHistory.push({ status: this.status });
   }
-
   next();
 });
 

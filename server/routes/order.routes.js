@@ -28,23 +28,45 @@ router.post('/', uploadPayment.single('instapayScreenshot'), async (req, res, ne
     let subtotal = 0;
     const orderItems = [];
 
-    for (const { productId, quantity } of parsedItems) {
+    // FIX Bug 1+2: iterate with selectedColor, validate per-variant stock
+    for (const { productId, quantity, selectedColor } of parsedItems) {
       const product = await Product.findById(productId);
       if (!product || !product.isActive) {
         return res.status(400).json({ success: false, message: `Product ${productId} not found` });
       }
-      if (product.stock < quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient stock for ${product.name.ar}`,
-        });
+
+      if (product.colorVariants && product.colorVariants.length > 0) {
+        // Product has color variants — validate the specific variant
+        if (!selectedColor) {
+          return res.status(400).json({ success: false, message: `يجب اختيار اللون لمنتج ${product.name.ar}` });
+        }
+        const variant = product.colorVariants.find(v => v.color === selectedColor);
+        if (!variant) {
+          return res.status(400).json({ success: false, message: `اللون "${selectedColor}" غير متوفر لهذا المنتج` });
+        }
+        if (variant.quantity < quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `الكمية المتاحة من ${product.name.ar} (${selectedColor}) هي ${variant.quantity} فقط`,
+          });
+        }
+      } else {
+        // No color variants — check flat stock
+        if (product.stock < quantity) {
+          return res.status(400).json({
+            success: false,
+            message: `Insufficient stock for ${product.name.ar}`,
+          });
+        }
       }
+
       const unitPrice = product.sellingPrice * (1 - product.discount / 100);
       subtotal += unitPrice * quantity;
       orderItems.push({
         product: product._id,
         name: product.name,
         image: product.images[0]?.url,
+        selectedColor: selectedColor || null, // FIX Bug 2: store the selected color
         quantity,
         unitPrice,
         costPrice: product.costPrice,
@@ -61,11 +83,19 @@ router.post('/', uploadPayment.single('instapayScreenshot'), async (req, res, ne
       return res.status(400).json({ success: false, message: 'Shipping zone not found' });
     }
 
-    // Deduct stock
-    for (const { productId, quantity } of parsedItems) {
-      await Product.findByIdAndUpdate(productId, {
-        $inc: { stock: -quantity, sold: quantity },
-      });
+    // FIX Bug 1: deduct from specific color variant, not flat stock
+    for (const { productId, quantity, selectedColor } of parsedItems) {
+      const product = await Product.findById(productId);
+      if (product.colorVariants && product.colorVariants.length > 0 && selectedColor) {
+        const variant = product.colorVariants.find(v => v.color === selectedColor);
+        if (variant) variant.quantity -= quantity;
+        product.sold = (product.sold || 0) + quantity;
+        await product.save(); // triggers pre-save hook to recompute total stock
+      } else {
+        await Product.findByIdAndUpdate(productId, {
+          $inc: { stock: -quantity, sold: quantity },
+        });
+      }
     }
 
     // Build order
@@ -150,7 +180,8 @@ router.get('/my/orders', protect, async (req, res, next) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select('status paymentStatus total createdAt items shippingAddress'),
+        // FIX Bug 8: include shippingFee, paymentMethod, isReturnEligible — used by MyOrders.jsx
+        .select('status paymentStatus paymentMethod total subtotal shippingFee createdAt items shippingAddress isReturnEligible'),
       Order.countDocuments({ user: req.user._id }),
     ]);
 

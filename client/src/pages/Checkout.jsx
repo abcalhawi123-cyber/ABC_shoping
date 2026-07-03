@@ -41,7 +41,7 @@ export default function Checkout() {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       fd.append('paymentMethod', pay);
-      fd.append('items', JSON.stringify(cart.map(i => ({ productId: i._id, quantity: i.qty }))));
+      fd.append('items', JSON.stringify(cart.map(i => ({ productId: i._id, quantity: i.qty, selectedColor: i.selectedColor || null })))); // FIX Bug 3
       if (user?._id) fd.append('userId', user._id);
       if (ss) fd.append('instapayScreenshot', ss);
       const { data } = await placeOrder(fd);

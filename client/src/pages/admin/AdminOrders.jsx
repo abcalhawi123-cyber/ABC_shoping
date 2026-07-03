@@ -219,7 +219,7 @@ export default function AdminOrders() {
               <h4 style={dt}>📦 {lang==='ar'?'المنتجات':'Items'}</h4>
               {sel.items?.map((item,i) => (
                 <div key={i} style={{ display:'flex', justifyContent:'space-between', marginBottom:8, fontSize:14 }}>
-                  <span>{item.name?.ar} × {item.quantity}</span>
+                  <span>{item.name?.ar} {item.selectedColor ? `(🎨 ${item.selectedColor})` : ''} × {item.quantity}</span>
                   <span style={{ fontWeight:600 }}>{(item.unitPrice*item.quantity).toFixed(0)} ج.م</span>
                 </div>
               ))}

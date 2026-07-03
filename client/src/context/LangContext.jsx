@@ -41,6 +41,7 @@ const T = {
     netProfit: 'الربح الصافي', totalRevenue: 'إجمالي الإيرادات',
     adminCategories: 'الأصناف', adminReturns: 'المرتجعات',
     colorVariants: 'الألوان والكميات', addColor: 'إضافة لون', color: 'اللون', quantity: 'الكمية',
+    adminOrdersNav: 'الطلبات', adminShippingNav: 'الشحن', adminReportsNav: 'التقارير', // FIX Bug 5
   },
   en: {
     brand: BRAND,
@@ -77,6 +78,7 @@ const T = {
     netProfit: 'Net Profit', totalRevenue: 'Total Revenue',
     adminCategories: 'Categories', adminReturns: 'Returns',
     colorVariants: 'Colors & Stock', addColor: 'Add Color', color: 'Color', quantity: 'Quantity',
+    adminOrdersNav: 'Orders', adminShippingNav: 'Shipping', adminReportsNav: 'Reports', // FIX Bug 5
   },
 };
 

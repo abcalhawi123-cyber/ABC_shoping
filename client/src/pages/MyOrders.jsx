@@ -28,8 +28,10 @@ function ReturnModal({ item, orderId, onClose, onSuccess }) {
     try {
       await submitReturn({
         orderId,
+        productId: item.product,              // FIX Bug 4: needed for restock
         productName: item.name,
         productImage: item.image,
+        selectedColor: item.selectedColor || null, // FIX Bug 4: which variant to restock
         quantity: item.quantity,
         reason: reason.trim(),
       });
@@ -150,6 +152,9 @@ export default function MyOrders() {
                         {item.image && <img src={item.image} alt="" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} />}
                         <div>
                           <p style={{ margin: 0, fontSize: 14, color: '#333', fontWeight: 500 }}>{item.name?.[lang] || item.name?.ar} × {item.quantity}</p>
+                          {item.selectedColor && ( // FIX Bug 2: display selected color
+                            <p style={{ margin: '2px 0 0', fontSize: 11, color: '#6D1A36' }}>🎨 {item.selectedColor}</p>
+                          )}
                           <p style={{ margin: 0, fontSize: 12, color: '#888' }}>{(item.unitPrice * item.quantity).toFixed(0)} ج.م</p>
                         </div>
                       </div>

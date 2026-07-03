@@ -15,11 +15,11 @@ export default function AdminLayout({ children }) {
   const links = [
     { to: 'dashboard', label: `📊 ${t('dashboard')}` },
     { to: 'products',  label: `📦 ${t('products')}` },
-    { to: 'orders',    label: `🛒 ${t('myOrders').replace('طلباتي','الطلبات').replace('My Orders','Orders')}` },
+    { to: 'orders',    label: `🛒 ${t('adminOrdersNav')}` },      // FIX Bug 5
     { to: 'categories',label: `🏷️ ${t('adminCategories')}` },
     { to: 'returns',   label: `🔄 ${t('adminReturns')}` },
-    { to: 'shipping',  label: `🚚 ${t('shippingFee').replace('رسوم الشحن','الشحن').replace('Shipping Fee','Shipping')}` },
-    { to: 'reports',   label: `📈 ${t('totalRevenue').replace('إجمالي الإيرادات','التقارير').replace('Total Revenue','Reports')}` },
+    { to: 'shipping',  label: `🚚 ${t('adminShippingNav')}` },     // FIX Bug 5
+    { to: 'reports',   label: `📈 ${t('adminReportsNav')}` },      // FIX Bug 5
   ];
 
   const out = () => { logoutUser(); navigate(`/${AP}/login`); };

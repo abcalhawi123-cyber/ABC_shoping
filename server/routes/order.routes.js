@@ -6,29 +6,32 @@ const ShippingZone = require('../models/ShippingZone');
 const { protect, adminOnly } = require('../middleware/auth');
 const { uploadPayment } = require('../config/cloudinary');
 
+const COD_FEE = 12; // Extra fee for Cash on Delivery, in EGP
+
 // ── POST /api/orders — place order (guest or logged-in) ───
 router.post('/', uploadPayment.single('instapayScreenshot'), async (req, res, next) => {
   try {
     const {
       customerName, customerEmail, customerPhone,
       governorate, city, street, building,
-      items, // JSON string: [{productId, quantity}]
-      paymentMethod,
+      items, // JSON string: [{productId, quantity, selectedColor}]
+      paymentMethod, // 'cod' | 'instapay' — Paymob/card removed
       instapayTransactionId,
-      userId, // optional — if user is logged in
+      userId,
     } = req.body;
 
-    // Parse items
+    if (!['cod', 'instapay'].includes(paymentMethod)) {
+      return res.status(400).json({ success: false, message: 'طريقة الدفع غير صالحة' });
+    }
+
     const parsedItems = JSON.parse(items);
     if (!parsedItems?.length) {
       return res.status(400).json({ success: false, message: 'Order must have at least one item' });
     }
 
-    // Validate products and build order items
     let subtotal = 0;
     const orderItems = [];
 
-    // FIX Bug 1+2: iterate with selectedColor, validate per-variant stock
     for (const { productId, quantity, selectedColor } of parsedItems) {
       const product = await Product.findById(productId);
       if (!product || !product.isActive) {
@@ -36,7 +39,6 @@ router.post('/', uploadPayment.single('instapayScreenshot'), async (req, res, ne
       }
 
       if (product.colorVariants && product.colorVariants.length > 0) {
-        // Product has color variants — validate the specific variant
         if (!selectedColor) {
           return res.status(400).json({ success: false, message: `يجب اختيار اللون لمنتج ${product.name.ar}` });
         }
@@ -50,14 +52,11 @@ router.post('/', uploadPayment.single('instapayScreenshot'), async (req, res, ne
             message: `الكمية المتاحة من ${product.name.ar} (${selectedColor}) هي ${variant.quantity} فقط`,
           });
         }
-      } else {
-        // No color variants — check flat stock
-        if (product.stock < quantity) {
-          return res.status(400).json({
-            success: false,
-            message: `Insufficient stock for ${product.name.ar}`,
-          });
-        }
+      } else if (product.stock < quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${product.name.ar}`,
+        });
       }
 
       const unitPrice = product.sellingPrice * (1 - product.discount / 100);
@@ -66,7 +65,7 @@ router.post('/', uploadPayment.single('instapayScreenshot'), async (req, res, ne
         product: product._id,
         name: product.name,
         image: product.images[0]?.url,
-        selectedColor: selectedColor || null, // FIX Bug 2: store the selected color
+        selectedColor: selectedColor || null,
         quantity,
         unitPrice,
         costPrice: product.costPrice,
@@ -74,7 +73,6 @@ router.post('/', uploadPayment.single('instapayScreenshot'), async (req, res, ne
       });
     }
 
-    // Get shipping fee
     const zone = await ShippingZone.findOne({
       $or: [{ 'governorate.ar': governorate }, { 'governorate.en': governorate }],
       isActive: true,
@@ -83,46 +81,40 @@ router.post('/', uploadPayment.single('instapayScreenshot'), async (req, res, ne
       return res.status(400).json({ success: false, message: 'Shipping zone not found' });
     }
 
-    // FIX Bug 1: deduct from specific color variant, not flat stock
+    // Deduct stock — from specific color variant when applicable
     for (const { productId, quantity, selectedColor } of parsedItems) {
       const product = await Product.findById(productId);
       if (product.colorVariants && product.colorVariants.length > 0 && selectedColor) {
         const variant = product.colorVariants.find(v => v.color === selectedColor);
         if (variant) variant.quantity -= quantity;
         product.sold = (product.sold || 0) + quantity;
-        await product.save(); // triggers pre-save hook to recompute total stock
+        await product.save();
       } else {
-        await Product.findByIdAndUpdate(productId, {
-          $inc: { stock: -quantity, sold: quantity },
-        });
+        await Product.findByIdAndUpdate(productId, { $inc: { stock: -quantity, sold: quantity } });
       }
     }
 
-    // Build order
+    const codFee = paymentMethod === 'cod' ? COD_FEE : 0;
+
     const orderData = {
-      customer: {
-        name: customerName,
-        email: customerEmail,
-        phone: customerPhone,
-      },
+      customer: { name: customerName, email: customerEmail, phone: customerPhone },
       items: orderItems,
       shippingAddress: {
         governorate: { ar: zone.governorate.ar, en: zone.governorate.en },
-        city,
-        street,
-        building,
+        city, street, building,
       },
       shippingFee: zone.price,
       estimatedDeliveryDays: zone.estimatedDays,
       subtotal,
-      total: subtotal + zone.price,
+      codFee,
+      total: subtotal + zone.price + codFee,
       paymentMethod,
+      paymentStatus: 'pending',
       isGuestOrder: !userId,
     };
 
     if (userId) orderData.user = userId;
 
-    // InstaPay fields
     if (paymentMethod === 'instapay') {
       if (!instapayTransactionId) {
         return res.status(400).json({ success: false, message: 'Transaction ID required for InstaPay' });
@@ -132,11 +124,6 @@ router.post('/', uploadPayment.single('instapayScreenshot'), async (req, res, ne
         orderData.instapayScreenshotUrl = req.file.path;
         orderData.instapayScreenshotPublicId = req.file.filename;
       }
-      orderData.paymentStatus = 'pending'; // Awaits admin approval
-    }
-
-    if (paymentMethod === 'cod') {
-      orderData.paymentStatus = 'pending';
     }
 
     const order = await Order.create(orderData);
@@ -180,14 +167,25 @@ router.get('/my/orders', protect, async (req, res, next) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        // FIX Bug 8: include shippingFee, paymentMethod, isReturnEligible — used by MyOrders.jsx
-        .select('status paymentStatus paymentMethod total subtotal shippingFee createdAt items shippingAddress isReturnEligible'),
+        .select('status paymentStatus paymentMethod total subtotal shippingFee codFee createdAt items shippingAddress isReturnEligible refundAmount'),
       Order.countDocuments({ user: req.user._id }),
     ]);
 
+    // Auto-expire the 15-day return window server-side, so the flag
+    // is always accurate regardless of when the client last checked.
+    const days15 = 15 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const withExpiry = orders.map(o => {
+      const obj = o.toObject();
+      if (obj.isReturnEligible && now - new Date(obj.createdAt).getTime() > days15) {
+        obj.isReturnEligible = false;
+      }
+      return obj;
+    });
+
     res.json({
       success: true,
-      data: orders,
+      data: withExpiry,
       pagination: { total, page, pages: Math.ceil(total / limit) },
     });
   } catch (e) {
@@ -207,14 +205,9 @@ router.patch('/:id/status', protect, adminOnly, async (req, res, next) => {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
-    // Check return eligibility
-    if (status === 'مرتجع' && !order.canReturn) {
-      return res.status(400).json({ success: false, message: 'Return window (15 days) has expired' });
-    }
-
     order.status = status;
     if (note) order.notes = note;
-    await order.save(); // Pre-save hook handles auto-restock
+    await order.save();
 
     res.json({ success: true, data: order });
   } catch (e) {

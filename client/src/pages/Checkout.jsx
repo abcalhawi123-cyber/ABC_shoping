@@ -7,14 +7,19 @@ import { useAuth } from '../context/AuthContext';
 import { getShippingZones, placeOrder } from '../api';
 import toast from 'react-hot-toast';
 
+const COD_FEE = 12; // Extra fee for Cash on Delivery — must match server (order.routes.js)
+const INSTAPAY_NUMBER = '01212957890';
+const INSTAPAY_IPA = 'abc-stock@instapay';
+const INSTAPAY_QR = '/instapay-qr.jpg';
+
 export default function Checkout() {
   const { t, lang, brand } = useLang();
-  const { cart, subtotal, dispatch } = useCart();
+  const { cart, subtotal, dispatch, itemKey } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [zones, setZones] = useState([]);
   const [zone, setZone] = useState(null);
-  const [pay, setPay] = useState('cod');
+  const [pay, setPay] = useState('cod'); // 'cod' | 'instapay' — Paymob/card removed
   const [ss, setSs] = useState(null);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
@@ -29,7 +34,8 @@ export default function Checkout() {
     setZone(found || null);
   }, [form.governorate, zones]);
 
-  const total = subtotal + (zone?.price || 0);
+  const codFee = pay === 'cod' ? COD_FEE : 0;
+  const total = subtotal + (zone?.price || 0) + codFee;
 
   const submit = async e => {
     e.preventDefault();
@@ -41,7 +47,11 @@ export default function Checkout() {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => fd.append(k, v));
       fd.append('paymentMethod', pay);
-      fd.append('items', JSON.stringify(cart.map(i => ({ productId: i._id, quantity: i.qty, selectedColor: i.selectedColor || null })))); // FIX Bug 3
+      fd.append('items', JSON.stringify(cart.map(i => ({
+        productId: i._id,
+        quantity: i.qty,
+        selectedColor: i.selectedColor || null,
+      }))));
       if (user?._id) fd.append('userId', user._id);
       if (ss) fd.append('instapayScreenshot', ss);
       const { data } = await placeOrder(fd);
@@ -65,7 +75,6 @@ export default function Checkout() {
       <Helmet><title>{t('checkout')} — {brand}</title></Helmet>
       <h1 style={{ color: '#6D1A36', marginBottom: 20, fontSize: 22 }}>{t('checkout')}</h1>
 
-      {/* Responsive: form + summary stack on mobile */}
       <div className="grid-checkout">
         <form onSubmit={submit}>
           <div style={sec}>
@@ -95,31 +104,55 @@ export default function Checkout() {
             {F('building', t('building'), 'text', false)}
           </div>
 
+          {/* Payment Method — Paymob/card removed, only COD + InstaPay */}
           <div style={sec}>
             <h3 style={secT}>💳 {t('paymentMethod')}</h3>
-            {[{ v: 'cod', l: `💵 ${t('cod')}` }, { v: 'instapay', l: `📱 ${t('instapay')}` }, { v: 'card', l: `💳 ${t('card')}` }].map(m => (
+            {[
+              { v: 'cod', l: `💵 ${t('cod')} (+${COD_FEE} ج.م)` },
+              { v: 'instapay', l: `📱 ${t('instapay')}` },
+            ].map(m => (
               <label key={m.v} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, cursor: 'pointer' }}>
                 <input type="radio" name="pay" value={m.v} checked={pay === m.v} onChange={() => setPay(m.v)} style={{ width: 18, height: 18 }} />
                 <span style={{ fontWeight: 500, fontSize: 15 }}>{m.l}</span>
               </label>
             ))}
+
+            {pay === 'cod' && (
+              <div style={{ background: '#fff8e1', borderRadius: 10, padding: 12, marginTop: 4, border: '1px solid #ffe082' }}>
+                <p style={{ margin: 0, fontSize: 13, color: '#8a6100' }}>
+                  ℹ️ {lang === 'ar'
+                    ? `يُضاف رسم إضافي قدره ${COD_FEE} ج.م على الدفع عند الاستلام.`
+                    : `An extra fee of ${COD_FEE} EGP applies to Cash on Delivery.`}
+                </p>
+              </div>
+            )}
+
             {pay === 'instapay' && (
               <div style={{ background: '#f0f8ff', borderRadius: 10, padding: 14, marginTop: 8, border: '1px solid #bbdefb' }}>
                 <p style={{ margin: '0 0 12px', fontSize: 14, color: '#6D1A36', fontWeight: 600 }}>
                   📲 {lang === 'ar' ? 'حول المبلغ' : 'Transfer'} <strong>{total.toFixed(0)} ج.م</strong> {lang === 'ar' ? 'على InstaPay' : 'via InstaPay'}
                 </p>
+
+                {/* InstaPay transfer details */}
+                <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14, background: '#fff', borderRadius: 8, padding: 12 }}>
+                  <img src={INSTAPAY_QR} alt="InstaPay QR" style={{ width: 110, height: 110, objectFit: 'contain', borderRadius: 6, flexShrink: 0 }} />
+                  <div style={{ fontSize: 13, color: '#333', lineHeight: 1.8 }}>
+                    <p style={{ margin: 0 }}>
+                      <strong>{lang === 'ar' ? 'رقم InstaPay:' : 'InstaPay Number:'}</strong>{' '}
+                      <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{INSTAPAY_NUMBER}</span>
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      <strong>IPA:</strong>{' '}
+                      <span style={{ fontFamily: 'monospace', fontWeight: 700 }}>{INSTAPAY_IPA}</span>
+                    </p>
+                  </div>
+                </div>
+
                 {F('instapayTransactionId', t('transactionId'))}
                 <div>
                   <label style={ls}>{t('uploadScreenshot')}</label>
                   <input type="file" accept="image/*" onChange={e => setSs(e.target.files[0])} style={{ ...is, padding: 8 }} />
                 </div>
-              </div>
-            )}
-            {pay === 'card' && (
-              <div style={{ background: '#f0f8ff', borderRadius: 10, padding: 14, marginTop: 8 }}>
-                <p style={{ fontSize: 14, color: '#555', margin: 0 }}>
-                  {lang === 'ar' ? 'ستنتقل إلى بوابة Paymob الآمنة.' : 'You will be redirected to Paymob secure gateway.'}
-                </p>
               </div>
             )}
           </div>
@@ -134,11 +167,14 @@ export default function Checkout() {
           <div style={sec}>
             <h3 style={secT}>🛒 {t('orderSummary')}</h3>
             {cart?.map(item => {
+              const key = itemKey ? itemKey(item) : item._id;
               const name = item.name?.[lang] || item.name?.ar || '';
               const price = item.sellingPrice * (1 - (item.discount || 0) / 100);
               return (
-                <div key={item._id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 }}>
-                  <span style={{ flex: 1, color: '#555', marginInlineEnd: 8 }}>{name} × {item.qty}</span>
+                <div key={key} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 }}>
+                  <span style={{ flex: 1, color: '#555', marginInlineEnd: 8 }}>
+                    {name}{item.selectedColor ? ` (${item.selectedColor})` : ''} × {item.qty}
+                  </span>
                   <strong style={{ flexShrink: 0 }}>{(price * item.qty).toFixed(0)} ج.م</strong>
                 </div>
               );
@@ -148,10 +184,16 @@ export default function Checkout() {
               <span style={{ color: '#555' }}>{t('subtotal')}</span>
               <span>{subtotal.toFixed(0)} ج.م</span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14, fontSize: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 }}>
               <span style={{ color: '#555' }}>{t('shippingFee')}</span>
               <span style={{ color: zone ? '#27ae60' : '#888' }}>{zone ? `${zone.price} ج.م` : '—'}</span>
             </div>
+            {codFee > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14, fontSize: 14 }}>
+                <span style={{ color: '#555' }}>{lang === 'ar' ? 'رسوم الدفع عند الاستلام' : 'COD Fee'}</span>
+                <span style={{ color: '#e67e22' }}>{codFee} ج.م</span>
+              </div>
+            )}
             <hr style={{ border: 'none', borderTop: '2px solid #6D1A36', margin: '0 0 12px' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 20 }}>
               <span>{t('total')}</span>

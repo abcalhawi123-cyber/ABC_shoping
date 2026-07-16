@@ -6,14 +6,96 @@ import AdminLayout from './AdminLayout';
 
 const SC = { 'قيد المراجعة': { bg: '#fff3e0', c: '#ef6c00' }, 'جاري التجهيز': { bg: '#e3f2fd', c: '#1565c0' }, 'تم الشحن': { bg: '#e8eaf6', c: '#3949ab' }, 'تم التسليم': { bg: '#e8f5e9', c: '#2e7d32' }, 'مرتجع': { bg: '#ffebee', c: '#c62828' } };
 
+// Manual overrides are stored locally in the admin's browser only — they change
+// what this dashboard displays, not any underlying data on the server.
+const OVERRIDE_KEY = 'admin_dashboard_overrides_v1';
+const loadOverrides = () => {
+  try { return JSON.parse(localStorage.getItem(OVERRIDE_KEY)) || {}; } catch { return {}; }
+};
+const saveOverrides = (o) => localStorage.setItem(OVERRIDE_KEY, JSON.stringify(o));
+
 function Badge({ s }) {
   const x = SC[s] || { bg: '#f5f5f5', c: '#333' };
   return <span style={{ background: x.bg, color: x.c, padding: '4px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600 }}>{s}</span>;
 }
 
+// A KPI card that can be manually overridden by the admin.
+function EditableKpi({ id, label, actualValue, displayValue, icon, color, overrides, setOverrides, formatAsMoney }) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const isOverridden = overrides[id] !== undefined && overrides[id] !== null && overrides[id] !== '';
+
+  const startEdit = () => {
+    setDraft(isOverridden ? String(overrides[id]) : String(actualValue));
+    setEditing(true);
+  };
+
+  const save = () => {
+    const num = Number(draft);
+    if (Number.isNaN(num)) return toast.error('أدخل رقم صحيح');
+    const next = { ...overrides, [id]: num };
+    setOverrides(next);
+    saveOverrides(next);
+    setEditing(false);
+    toast.success('تم الحفظ (تعديل يدوي)');
+  };
+
+  const reset = () => {
+    const next = { ...overrides };
+    delete next[id];
+    setOverrides(next);
+    saveOverrides(next);
+    toast.success('تم إرجاع القيمة الفعلية');
+  };
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 2px 10px rgba(0,0,0,0.06)', borderBottom: `4px solid ${color}`, position: 'relative' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <p style={{ margin: '0 0 6px', color: '#888', fontSize: 13 }}>{label}</p>
+        <button
+          onClick={startEdit}
+          title="تعديل يدوي"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#aaa', padding: 0 }}
+        >
+          ✏️
+        </button>
+      </div>
+
+      {editing ? (
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <input
+            type="number"
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            autoFocus
+            style={{ width: '100%', padding: '6px 8px', border: '1px solid #ddd', borderRadius: 6, fontSize: 16, fontWeight: 700 }}
+          />
+          <button onClick={save} style={{ background: '#27ae60', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer', fontSize: 12 }}>✓</button>
+          <button onClick={() => setEditing(false)} style={{ background: '#f5f5f5', color: '#555', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer', fontSize: 12 }}>✕</button>
+        </div>
+      ) : (
+        <>
+          <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color }}>
+            {icon} {formatAsMoney ? `${Number(displayValue).toFixed(0)} ج.م` : displayValue}
+          </p>
+          {isOverridden && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+              <span style={{ fontSize: 10, color: '#e67e22', fontWeight: 600 }}>✎ تعديل يدوي</span>
+              <button onClick={reset} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 10, color: '#3498db', textDecoration: 'underline', padding: 0 }}>
+                إرجاع القيمة الفعلية
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [overrides, setOverrides] = useState(loadOverrides());
 
   const load = () => { setLoading(true); getDashboard().then(r => setData(r.data.data)).catch(() => toast.error('فشل التحميل')).finally(() => setLoading(false)); };
   useEffect(() => { load(); }, []);
@@ -36,21 +118,43 @@ export default function AdminDashboard() {
 
   const { salesStats, profitStats, lowStockProducts, recentOrders, topProducts, pendingInstapayApprovals } = data;
 
+  const actualOrderCount = salesStats.orderCount || 0;
+  const actualRevenue = salesStats.totalRevenue || 0;
+  const actualProfit = profitStats?.totalProfit || 0;
+
+  const displayOrderCount = overrides.orderCount ?? actualOrderCount;
+  const displayRevenue = overrides.revenue ?? actualRevenue;
+  const displayProfit = overrides.profit ?? actualProfit;
+
   return (
     <AdminLayout>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 16, marginBottom: 28 }}>
-        {[
-          { t: 'إجمالي الطلبات', v: salesStats.orderCount || 0, i: '📦', c: '#6D1A36' },
-          { t: 'إجمالي الإيرادات', v: `${(salesStats.totalRevenue || 0).toFixed(0)} ج.م`, i: '💰', c: '#3498db' },
-          { t: 'صافي الأرباح', v: `${(profitStats?.totalProfit || 0).toFixed(0)} ج.م`, i: '📈', c: '#27ae60' },
-          { t: 'InstaPay معلق', v: pendingInstapayApprovals, i: '⏳', c: pendingInstapayApprovals > 0 ? '#e74c3c' : '#27ae60' },
-        ].map(k => (
-          <div key={k.t} style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 2px 10px rgba(0,0,0,0.06)', borderBottom: `4px solid ${k.c}` }}>
-            <p style={{ margin: '0 0 6px', color: '#888', fontSize: 13 }}>{k.t}</p>
-            <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: k.c }}>{k.i} {k.v}</p>
-          </div>
-        ))}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 16, marginBottom: 28 }}>
+        <EditableKpi
+          id="orderCount" label="إجمالي الطلبات" icon="📦" color="#6D1A36"
+          actualValue={actualOrderCount} displayValue={displayOrderCount}
+          overrides={overrides} setOverrides={setOverrides}
+        />
+        <EditableKpi
+          id="revenue" label="إجمالي الإيرادات" icon="💰" color="#3498db"
+          actualValue={actualRevenue} displayValue={displayRevenue} formatAsMoney
+          overrides={overrides} setOverrides={setOverrides}
+        />
+        <EditableKpi
+          id="profit" label="صافي الأرباح" icon="📈" color="#27ae60"
+          actualValue={actualProfit} displayValue={displayProfit} formatAsMoney
+          overrides={overrides} setOverrides={setOverrides}
+        />
+        <div style={{ background: '#fff', borderRadius: 12, padding: 20, boxShadow: '0 2px 10px rgba(0,0,0,0.06)', borderBottom: `4px solid ${pendingInstapayApprovals > 0 ? '#e74c3c' : '#27ae60'}` }}>
+          <p style={{ margin: '0 0 6px', color: '#888', fontSize: 13 }}>InstaPay معلق</p>
+          <p style={{ margin: 0, fontSize: 24, fontWeight: 700, color: pendingInstapayApprovals > 0 ? '#e74c3c' : '#27ae60' }}>⏳ {pendingInstapayApprovals}</p>
+        </div>
       </div>
+
+      {Object.keys(overrides).length > 0 && (
+        <div style={{ background: '#fffbe6', border: '1px solid #ffe082', borderRadius: 10, padding: '10px 16px', marginBottom: 20, fontSize: 13, color: '#8a6100' }}>
+          ⚠️ بعض القيم أعلاه مُعدّلة يدوياً ولا تعكس البيانات الفعلية المحسوبة من الطلبات. اضغط "إرجاع القيمة الفعلية" لإلغاء التعديل.
+        </div>
+      )}
 
       {lowStockProducts?.length > 0 && (
         <div style={{ background: '#fff5f5', border: '1px solid #ffcccc', borderRadius: 12, padding: 20, marginBottom: 24 }}>

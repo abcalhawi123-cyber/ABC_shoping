@@ -16,7 +16,6 @@ export default function Footer() {
         <div>
           <h4 style={{ color: 'rgba(255,255,255,0.9)', margin: '0 0 12px', fontSize: 15 }}>{t('contactUs')}</h4>
           <a href="https://wa.me/201212957890" target="_blank" rel="noopener noreferrer" style={L}>📱 01212957890</a>
-          <a href="https://wa.me/201270530308" target="_blank" rel="noopener noreferrer" style={L}>📱 01270530308</a>
         </div>
         <div>
           <h4 style={{ color: 'rgba(255,255,255,0.9)', margin: '0 0 12px', fontSize: 15 }}>{t('followUs')}</h4>

@@ -8,7 +8,7 @@ const orderItemSchema = new mongoose.Schema({
   },
   name: { ar: String, en: String },        // Snapshot at time of purchase
   image: String,
-  selectedColor: { type: String, default: null }, // FIX Bug 2: which color variant was purchased
+  selectedColor: { type: String, default: null }, // which color variant was purchased
   quantity: { type: Number, required: true, min: 1 },
   unitPrice: { type: Number, required: true },     // effectivePrice at purchase time
   costPrice: { type: Number, required: true },     // for profit calc
@@ -45,12 +45,13 @@ const orderSchema = new mongoose.Schema(
 
     // Pricing
     subtotal: { type: Number, required: true },
+    codFee: { type: Number, default: 0 },    // Extra 12 EGP fee for Cash on Delivery
     total: { type: Number, required: true },
 
     // Payment
     paymentMethod: {
       type: String,
-      enum: ['cod', 'instapay', 'card'],
+      enum: ['cod', 'instapay'],
       required: true,
     },
     paymentStatus: {
@@ -63,9 +64,6 @@ const orderSchema = new mongoose.Schema(
     instapayScreenshotUrl: String,
     instapayScreenshotPublicId: String,
 
-    // Paymob card payment
-    paymobOrderId: String,
-    paymobTransactionId: String,
 
     // Order pipeline status (Arabic labels for admin panel)
     status: {
@@ -95,6 +93,7 @@ const orderSchema = new mongoose.Schema(
     returnApprovedAt: Date,
     returnReason: String,
     isReturnEligible: { type: Boolean, default: true },
+    refundAmount: { type: Number, default: 0 }, // productPrice + (2 × shippingFee)
 
     // Flags
     isGuestOrder: { type: Boolean, default: false },
@@ -122,10 +121,11 @@ orderSchema.virtual('canReturn').get(function () {
 
 // ── Hooks ─────────────────────────────────────────────────
 
-// FIX Bug 4+7: Bulk restock removed. Restocking is now handled
-// exclusively per-item via return.routes.js PATCH /:id, which
-// correctly respects color variants and prevents double-restock.
-// This hook ONLY tracks status history.
+// Bulk auto-restock on status change removed. Restocking is now handled
+// exclusively per-item through return.routes.js (PATCH /api/returns/:id),
+// which correctly respects color variants and prevents double-restock,
+// and also sets order.status = 'مرتجع' + calculates refundAmount itself.
+// This hook only tracks status history.
 orderSchema.pre('save', function (next) {
   if (this.isModified('status')) {
     this.statusHistory.push({ status: this.status });

@@ -2,13 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Return = require('../models/Return');
 const Order = require('../models/Order');
-const Product = require('../models/Product'); // FIX Bug 4: needed for restock
+const Product = require('../models/Product');
 const { protect, adminOnly } = require('../middleware/auth');
 
 // POST /api/returns — user submits per-item return
 router.post('/', protect, async (req, res, next) => {
   try {
-    // FIX Bug 4: accept productId and selectedColor
     const { orderId, productId, productName, productImage, selectedColor, quantity, reason } = req.body;
 
     if (!reason || !reason.trim()) {
@@ -16,7 +15,7 @@ router.post('/', protect, async (req, res, next) => {
     }
 
     const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (!order) return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
 
     if (order.user && order.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'غير مصرح' });
@@ -61,7 +60,7 @@ router.post('/', protect, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-// GET /api/returns — admin: all returns
+// GET /api/returns — admin: all returns, paginated + filterable
 router.get('/', protect, adminOnly, async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -79,7 +78,11 @@ router.get('/', protect, adminOnly, async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-// PATCH /api/returns/:id — admin updates status + restocks on approval
+// PATCH /api/returns/:id — admin approves/rejects
+// On approval:
+//   1. Restocks the specific color variant
+//   2. Sets order status to "مرتجع"
+//   3. Calculates refund = productPrice + (2 × shippingFee)
 router.patch('/:id', protect, adminOnly, async (req, res, next) => {
   try {
     const { status, adminNote } = req.body;
@@ -88,26 +91,46 @@ router.patch('/:id', protect, adminOnly, async (req, res, next) => {
     }
 
     const ret = await Return.findById(req.params.id);
-    if (!ret) return res.status(404).json({ success: false, message: 'Return not found' });
+    if (!ret) return res.status(404).json({ success: false, message: 'طلب الإرجاع غير موجود' });
 
-    // FIX Bug 4: Restock on approval — only once, respecting color variants
-    if (status === 'approved' && !ret.stockRestored && ret.product) {
-      const product = await Product.findById(ret.product);
-      if (product) {
-        if (product.colorVariants?.length > 0 && ret.selectedColor) {
-          const variant = product.colorVariants.find(v => v.color === ret.selectedColor);
-          if (variant) {
-            variant.quantity += ret.quantity;
+    if (status === 'approved' && !ret.stockRestored) {
+      // ── 1. Restock product (respects color variants) ────────
+      if (ret.product) {
+        const product = await Product.findById(ret.product);
+        if (product) {
+          if (product.colorVariants?.length > 0 && ret.selectedColor) {
+            const variant = product.colorVariants.find(v => v.color === ret.selectedColor);
+            if (variant) {
+              variant.quantity += ret.quantity;
+            } else {
+              product.stock += ret.quantity;
+            }
           } else {
-            // Color variant deleted since purchase — fallback to flat stock
             product.stock += ret.quantity;
           }
-        } else {
-          product.stock += ret.quantity;
+          product.sold = Math.max(0, (product.sold || 0) - ret.quantity);
+          await product.save();
         }
-        product.sold = Math.max(0, (product.sold || 0) - ret.quantity);
-        await product.save(); // triggers pre-save to recompute total stock
-        ret.stockRestored = true;
+      }
+      ret.stockRestored = true;
+
+      // ── 2. Update order status to "مرتجع" ─────────────────
+      const order = await Order.findById(ret.order);
+      if (order) {
+        // ── 3. Calculate refund amount ──────────────────────
+        // Find the product price from order items
+        const orderItem = order.items.find(i => i.product?.toString() === ret.product?.toString());
+        const productPrice = orderItem ? orderItem.unitPrice * ret.quantity : 0;
+        const refundAmount = productPrice + (2 * order.shippingFee);
+
+        order.status = 'مرتجع';
+        order.returnRequestedAt = order.returnRequestedAt || new Date();
+        order.returnApprovedAt = new Date();
+        order.isReturnEligible = false;
+        order.refundAmount = refundAmount;
+        await order.save();
+
+        ret.refundAmount = refundAmount;
       }
     }
 

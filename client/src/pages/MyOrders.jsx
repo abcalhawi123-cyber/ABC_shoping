@@ -28,10 +28,10 @@ function ReturnModal({ item, orderId, onClose, onSuccess }) {
     try {
       await submitReturn({
         orderId,
-        productId: item.product,              // FIX Bug 4: needed for restock
+        productId: item.product,
         productName: item.name,
         productImage: item.image,
-        selectedColor: item.selectedColor || null, // FIX Bug 4: which variant to restock
+        selectedColor: item.selectedColor || null,
         quantity: item.quantity,
         reason: reason.trim(),
       });
@@ -93,9 +93,20 @@ export default function MyOrders() {
 
   useEffect(() => { if (user) load(); else setLoading(false); }, [user]);
 
+  // Server already auto-expires isReturnEligible based on the 15-day window
+  // (see order.routes.js GET /my/orders). We trust that flag here instead of
+  // re-deriving it, so client and server never disagree.
   const isReturnEligible = (order) => {
-    if (!['تم التسليم'].includes(order.status)) return false;
+    if (order.status !== 'تم التسليم') return false;
+    if (order.isReturnEligible === false) return false;
     return Date.now() - new Date(order.createdAt).getTime() <= 15 * 24 * 60 * 60 * 1000;
+  };
+
+  const isReturnExpired = (order) => {
+    // Delivered, but the 15-day window has passed — show as expired rather than
+    // silently hiding the return option with no explanation.
+    if (order.status !== 'تم التسليم') return false;
+    return Date.now() - new Date(order.createdAt).getTime() > 15 * 24 * 60 * 60 * 1000;
   };
 
   if (!user) return (
@@ -128,6 +139,7 @@ export default function MyOrders() {
           {orders.map(order => {
             const s = SC[order.status] || { bg: '#f5f5f5', c: '#333' };
             const eligible = isReturnEligible(order);
+            const expired = isReturnExpired(order);
             const deadline = new Date(new Date(order.createdAt).getTime() + 15 * 24 * 60 * 60 * 1000);
 
             return (
@@ -152,18 +164,21 @@ export default function MyOrders() {
                         {item.image && <img src={item.image} alt="" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} />}
                         <div>
                           <p style={{ margin: 0, fontSize: 14, color: '#333', fontWeight: 500 }}>{item.name?.[lang] || item.name?.ar} × {item.quantity}</p>
-                          {item.selectedColor && ( // FIX Bug 2: display selected color
-                            <p style={{ margin: '2px 0 0', fontSize: 11, color: '#6D1A36' }}>🎨 {item.selectedColor}</p>
+                          {item.selectedColor && (
+                            <p style={{ margin: '2px 0 0', fontSize: 11, color: BG }}>🎨 {item.selectedColor}</p>
                           )}
                           <p style={{ margin: 0, fontSize: 12, color: '#888' }}>{(item.unitPrice * item.quantity).toFixed(0)} ج.م</p>
                         </div>
                       </div>
-                      {/* Per-item return button */}
+                      {/* Per-item return button — hidden once expired, replaced by expired note */}
                       {eligible && (
                         <button onClick={() => setReturnModal({ item, orderId: order._id })}
                           style={{ padding: '5px 12px', background: '#fff5f0', color: '#c0392b', border: '1px solid #f5c6c6', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>
                           🔄 {t('returnBtn')}
                         </button>
+                      )}
+                      {!eligible && expired && (
+                        <span style={{ fontSize: 11, color: '#aaa', flexShrink: 0 }}>{t('returnExpired')}</span>
                       )}
                     </div>
                   ))}
@@ -171,6 +186,12 @@ export default function MyOrders() {
                     <span>{lang === 'ar' ? 'رسوم الشحن' : 'Shipping'}</span>
                     <span>{order.shippingFee} ج.م</span>
                   </div>
+                  {order.codFee > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#aaa', marginTop: 2 }}>
+                      <span>{lang === 'ar' ? 'رسوم الدفع عند الاستلام' : 'COD Fee'}</span>
+                      <span>{order.codFee} ج.م</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Footer actions */}
@@ -185,7 +206,7 @@ export default function MyOrders() {
                   )}
                   {order.status === 'مرتجع' && (
                     <span style={{ padding: '7px 12px', background: '#ffebee', color: '#c62828', borderRadius: 8, fontSize: 12, fontWeight: 600 }}>
-                      ✓ {t('returnRequested')}
+                      ✓ {t('returnRequested')}{order.refundAmount ? ` — ${order.refundAmount.toFixed(0)} ج.م` : ''}
                     </span>
                   )}
                   {order.paymentMethod === 'instapay' && (

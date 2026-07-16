@@ -214,6 +214,24 @@ export default function AdminReturns() {
               </div>
             </div>
 
+            {/* Refund/status notice — informs admin what approval will do */}
+            {selected.status === 'pending' && (
+              <div style={{ background: '#fffbe6', border: '1px solid #ffe082', borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
+                <p style={{ margin: 0, fontSize: 13, color: '#8a6100' }}>
+                  ℹ️ {lang === 'ar'
+                    ? 'عند الموافقة: سيتم إرجاع المخزون تلقائياً، وتغيير حالة الطلب إلى "مرتجع"، وحساب مبلغ الاسترداد (سعر المنتج + ضعف رسوم الشحن).'
+                    : 'On approval: stock is auto-restocked, the order status becomes "Returned", and the refund is calculated as (product price + 2× shipping fee).'}
+                </p>
+              </div>
+            )}
+            {selected.refundAmount > 0 && (
+              <div style={{ background: '#e8f5e9', border: '1px solid #a5d6a7', borderRadius: 10, padding: '10px 14px', marginBottom: 16 }}>
+                <p style={{ margin: 0, fontSize: 14, color: '#2e7d32', fontWeight: 700 }}>
+                  💰 {lang === 'ar' ? 'مبلغ الاسترداد:' : 'Refund Amount:'} {selected.refundAmount.toFixed(0)} ج.م
+                </p>
+              </div>
+            )}
+
             {/* Admin note */}
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: 'block', marginBottom: 6, fontWeight: 600, color: '#555', fontSize: 14 }}>

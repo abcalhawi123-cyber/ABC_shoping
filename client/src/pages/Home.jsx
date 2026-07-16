@@ -37,8 +37,8 @@ export default function Home() {
   return (
     <>
       <Helmet>
-        <title>{brand} — {lang==='ar'?'متجر الألعاب':"Toy Store"}</title>
-        <meta name="description" content={lang==='ar'?'أفضل متجر ألعاب أطفال في مصر.':'Egypt\'s best toy store.'} />
+        <title>{brand} — {lang==='ar'?'stock store':"stock Store"}</title>
+        <meta name="description" content={lang==='ar'?'أفضل متجر للهدايا و المنتجات المتنوعه.':'Egypt\'s best gifts & more products store.'} />
       </Helmet>
 
       {/* Hero */}
@@ -46,7 +46,7 @@ export default function Home() {
         <div style={{ position:'absolute', top:-30, right:-30, width:150, height:150, background:'rgba(255,255,255,0.06)', borderRadius:'50%' }} />
         <h1 style={{ fontSize:'clamp(28px,6vw,44px)', margin:'0 0 10px', fontWeight:800, letterSpacing:1 }}>{brand}</h1>
         <p style={{ fontSize:'clamp(14px,3vw,18px)', opacity:0.85, margin:'0 0 24px' }}>
-          {lang==='ar'?'متجرك الأول للألعاب والهدايا المميزة':'Your #1 destination for toys & gifts'}
+          {lang==='ar'?'متجرك الأول للألعاب والهدايا و المنتجات المتنوعه':'Your #1 destination for toys & gifts & more products!'}
         </p>
         <Link to="/products" style={{ display:'inline-block', background:'#fff', color:BG, padding:'13px 32px', borderRadius:30, textDecoration:'none', fontWeight:700, fontSize:16 }}>
           {t('shopNow')} 🛍

@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 const COD_FEE = 12; // Extra fee for Cash on Delivery — must match server (order.routes.js)
 const INSTAPAY_NUMBER = '01212957890';
 const INSTAPAY_IPA = 'abc-stock@instapay';
-const INSTAPAY_QR = '/instapay-qr.jpg';
+const INSTAPAY_QR = '/qr.jpg';
 
 export default function Checkout() {
   const { t, lang, brand } = useLang();

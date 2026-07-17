@@ -135,7 +135,7 @@ export default function Checkout() {
 
                 {/* InstaPay transfer details */}
                 <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14, background: '#fff', borderRadius: 8, padding: 12 }}>
-                  <img src={INSTAPAY_QR} alt="InstaPay QR" style={{ width: 140, height: 140, objectFit: 'contain', borderRadius: 6, flexShrink: 0 }} />
+                  <img src={INSTAPAY_QR} alt="InstaPay QR" style={{ width: 220, height: 220, objectFit: 'contain', borderRadius: 6, flexShrink: 0 }} />
                   <div style={{ fontSize: 13, color: '#333', lineHeight: 1.8 }}>
                     <p style={{ margin: 0 }}>
                       <strong>{lang === 'ar' ? 'رقم InstaPay:' : 'InstaPay Number:'}</strong>{' '}
